@@ -9,7 +9,7 @@
 
 #include "CalendarHelper.h"
 
-ICalErrorCode writeProperties(FILE *fout, const List *props) {
+ICalErrorCode writeProperties(FILE *fout, List *props) {
     if (fout == NULL || props == NULL) {
         return WRITE_ERROR;
     }
@@ -18,10 +18,9 @@ ICalErrorCode writeProperties(FILE *fout, const List *props) {
         return OK;
     }
 
-    ICalErrorCode err;
     Property *toWrite;
     ListIterator iter = createIterator(props);
-    while ((toWrite = (Property *)nextElement(iter)) != NULL) {
+    while ((toWrite = (Property *)nextElement(&iter)) != NULL) {
         fprintf(fout, "%s%c%s\r\n", \
                 toWrite->propName, \
                 // The comparison below is essentially "does toWrite->propDescr contain a ':' character?"
@@ -34,7 +33,7 @@ ICalErrorCode writeProperties(FILE *fout, const List *props) {
     return OK;
 }
 
-ICalErrorCode writeEvents(FILE *fout, const List *events) {
+ICalErrorCode writeEvents(FILE *fout, List *events) {
     if (fout == NULL || events == NULL) {
         return WRITE_ERROR;
     }
@@ -46,15 +45,18 @@ ICalErrorCode writeEvents(FILE *fout, const List *events) {
     ICalErrorCode err;
     Event *toWrite;
     ListIterator iter = createIterator(events);
-    while ((toWrite = (Event *)nextElement(iter)) != NULL) {
+    char dateTimeData[100];
+    while ((toWrite = (Event *)nextElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VEVENT\r\n");
         fprintf(fout, "UID:%s\r\n", toWrite->UID);
-        if ((err = writeDateTime(fout, toWrite->creationDateTime)) != OK) {
+        if ((err = getDateTimeAsWritable(dateTimeData, toWrite->creationDateTime)) != OK) {
             return err;
         }
-        if ((err = writeDateTime(fout, toWrite->startDateTime)) != OK) {
+        fprintf(fout, "DTSTAMP:%s\r\n", dateTimeData);
+        if ((err = getDateTimeAsWritable(dateTimeData, toWrite->startDateTime)) != OK) {
             return err;
         }
+        fprintf(fout, "DTSTART:%s\r\n", dateTimeData);
         if ((err = writeProperties(fout, toWrite->properties)) != OK) {
             return err;
         }
@@ -67,7 +69,7 @@ ICalErrorCode writeEvents(FILE *fout, const List *events) {
     return OK;
 }
 
-ICalErrorCode writeAlarms(FILE *fout, const List *alarms) {
+ICalErrorCode writeAlarms(FILE *fout, List *alarms) {
     if (fout == NULL || alarms == NULL) {
         return WRITE_ERROR;
     }
@@ -79,11 +81,11 @@ ICalErrorCode writeAlarms(FILE *fout, const List *alarms) {
     ICalErrorCode err;
     Alarm *toWrite;
     ListIterator iter = createIterator(alarms);
-    while ((toWrite = (Alarm *)nextElement(iter)) != NULL) {
+    while ((toWrite = (Alarm *)nextElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VALARM\r\n");
         fprintf(fout, "ACTION:%s\r\n", toWrite->action);
         fprintf(fout, "TRGIGER:%s\r\n", toWrite->trigger);
-        if ((err = writeProperties(fout, alarms->properties)) != OK) {
+        if ((err = writeProperties(fout, toWrite->properties)) != OK) {
             return err;
         }
         fprintf(fout, "END:VALARM\r\n");
@@ -92,13 +94,12 @@ ICalErrorCode writeAlarms(FILE *fout, const List *alarms) {
     return OK;
 }
 
-ICalErrorCode writeDateTime(FILE *fout, DateTime dt) {
-    if (fout == NULL) {
-        return WRITE_ERROR;
+ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
+    if (result == NULL) {
+        return OTHER_ERROR;
     }
 
-    fprintf(fout, "%sT%s", dt.date, dt.time);
-    fprintf(fout, "%s", (dt.UTC) ? "Z\r\n" : "\r\n");
+    snprintf(result, 100, "%sT%s%s", dt.date, dt.time, (dt.UTC) ? "Z" : "");
 
     return OK;
 }

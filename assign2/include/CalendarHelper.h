@@ -22,12 +22,12 @@
  * Function Signatures *
  ***********************/
 
-ICalErrorCode writeProperties(FILE *fout, const List *props);
+ICalErrorCode writeProperties(FILE *fout, List *props);
 
-ICalErrorCode writeEvents(FILE *fout, const List *events);
+ICalErrorCode writeEvents(FILE *fout, List *events);
 
-ICalErrorCode writeAlarms(FILE *fout, const List *alarms);
+ICalErrorCode writeAlarms(FILE *fout, List *alarms);
 
-ICalErrorCode writeDateTime(FILE *fout, DateTime dt);
+ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt);
 
 #endif
