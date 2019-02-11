@@ -15,6 +15,8 @@
 #define NUM_FILES 88
 
 int main() {
+    const char readPath[] = "/home/joseph/cis2750/a02/TEST/";
+    const char writePath[] = "/home/joseph/cis2750/a02/WriteTest/";
 
     /*
     printf("----------WHITESPACE TRIMMING----------\n");
@@ -404,108 +406,116 @@ int main() {
 
     // FIXME This is a list of files that give memory errors FIXME
     // None!
-    char *files[NUM_FILES+1] = {"/home/joseph/cis2750/a01/TEST/AIDS/FAMINE.ics",
-                                "/home/joseph/cis2750/a01/TEST/AIDS/LOSS.ics",
-                                "/home/joseph/cis2750/a01/TEST/AIDS/PESTILENCE.ics",
-                                "/home/joseph/cis2750/a01/TEST/AIDS/PLAGUE.ics",
-                                "/home/joseph/cis2750/a01/TEST/AIDS/WAR.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_PRODID/DupPRODID1.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_PRODID/DupPRODID2.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_PRODID/DupPRODID3.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_VER/DupVersion1.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_VER/DupVersion2.ics",
-                                "/home/joseph/cis2750/a01/TEST/DUP_VER/DupVersion3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/invOpeningTag2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/MissingAction.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/MissingClosingTag.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/MissingClosingTag2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/MissingClosingTag3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/MissingTrigger.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/NullAction.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_ALARM/NullTrigger.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/BadLine.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/blankLine.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/FUKU.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/INV_CAL-wrongendtag.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/invClosingTag1.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/invClosingTag3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/invOpeningTag3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingEndCalendar.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingEvent.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingEvent2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingOpeningTag.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingOpeningTag2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingOpeningTag3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingPRODID.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingPRODID2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingVER.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_CAL/MissingVER2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_DT/InvalidCreationDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_DT/InvalidStartDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_DT/MalformedCreationDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_DT/MalformedStartDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/invClosingTag2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/INV_EVENT-blankUID.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/INV_EVENT-DTENDandDURA.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/INV_EVENT-dupURL.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/invOpeningTag1.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MalformedUID.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingClosingTag.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingClosingTag2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingClosingTag3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingCreationDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingStartDate.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingUID.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_EVENT/MissingUID2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/BadFileName.txt",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/BadFileName2.ical",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/BadFileName3.icss",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/EmptyString.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/invalidEndings.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/InvalidLineEndings.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/INV_FILE-missingCRLF.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_FILE/MisspellllllThisName.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_PRODID/NullPRODID1.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_PRODID/NullPRODID2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_PRODID/NullPRODID3.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_VER/INV_VERSION1.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_VER/INV_VERSION2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_VER/MalformedVersion1.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_VER/MalformedVersion2.ics",
-                                "/home/joseph/cis2750/a01/TEST/INV_VER/NullVersion.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/cis2170.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/complexUnfolding.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/EBOLA.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/fuck_you.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/fuckyou.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/googleCalendarTest.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/invite.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/mLineProp1.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/NestedMedley.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/newCalendar.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/properties.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/testCalEvtPropAlm.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/testCalEvtProp.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/testCalSimpleNoUTC.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/testCalSimpleUTCComments.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/ValidFileFolding.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/ValidFileSimple.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/VALID-LINEFOLDSCOMMENTS.ics",
-                                "/home/joseph/cis2750/a01/TEST/OK/VALID-LINEFOLDS.ics",
+    char *files[NUM_FILES+1] = {"AIDS/FAMINE.ics",
+                                "AIDS/LOSS.ics",
+                                "AIDS/PESTILENCE.ics",
+                                "AIDS/PLAGUE.ics",
+                                "AIDS/WAR.ics",
+                                "DUP_PRODID/DupPRODID1.ics",
+                                "DUP_PRODID/DupPRODID2.ics",
+                                "DUP_PRODID/DupPRODID3.ics",
+                                "DUP_VER/DupVersion1.ics",
+                                "DUP_VER/DupVersion2.ics",
+                                "DUP_VER/DupVersion3.ics",
+                                "INV_ALARM/invOpeningTag2.ics",
+                                "INV_ALARM/MissingAction.ics",
+                                "INV_ALARM/MissingClosingTag.ics",
+                                "INV_ALARM/MissingClosingTag2.ics",
+                                "INV_ALARM/MissingClosingTag3.ics",
+                                "INV_ALARM/MissingTrigger.ics",
+                                "INV_ALARM/NullAction.ics",
+                                "INV_ALARM/NullTrigger.ics",
+                                "INV_CAL/BadLine.ics",
+                                "INV_CAL/blankLine.ics",
+                                "INV_CAL/FUKU.ics",
+                                "INV_CAL/INV_CAL-wrongendtag.ics",
+                                "INV_CAL/invClosingTag1.ics",
+                                "INV_CAL/invClosingTag3.ics",
+                                "INV_CAL/invOpeningTag3.ics",
+                                "INV_CAL/MissingEndCalendar.ics",
+                                "INV_CAL/MissingEvent.ics",
+                                "INV_CAL/MissingEvent2.ics",
+                                "INV_CAL/MissingOpeningTag.ics",
+                                "INV_CAL/MissingOpeningTag2.ics",
+                                "INV_CAL/MissingOpeningTag3.ics",
+                                "INV_CAL/MissingPRODID.ics",
+                                "INV_CAL/MissingPRODID2.ics",
+                                "INV_CAL/MissingVER.ics",
+                                "INV_CAL/MissingVER2.ics",
+                                "INV_DT/InvalidCreationDate.ics",
+                                "INV_DT/InvalidStartDate.ics",
+                                "INV_DT/MalformedCreationDate.ics",
+                                "INV_DT/MalformedStartDate.ics",
+                                "INV_EVENT/invClosingTag2.ics",
+                                "INV_EVENT/INV_EVENT-blankUID.ics",
+                                "INV_EVENT/INV_EVENT-DTENDandDURA.ics",
+                                "INV_EVENT/INV_EVENT-dupURL.ics",
+                                "INV_EVENT/invOpeningTag1.ics",
+                                "INV_EVENT/MalformedUID.ics",
+                                "INV_EVENT/MissingClosingTag.ics",
+                                "INV_EVENT/MissingClosingTag2.ics",
+                                "INV_EVENT/MissingClosingTag3.ics",
+                                "INV_EVENT/MissingCreationDate.ics",
+                                "INV_EVENT/MissingStartDate.ics",
+                                "INV_EVENT/MissingUID.ics",
+                                "INV_EVENT/MissingUID2.ics",
+                                "INV_FILE/BadFileName.txt",
+                                "INV_FILE/BadFileName2.ical",
+                                "INV_FILE/BadFileName3.icss",
+                                "INV_FILE/EmptyString.ics",
+                                "INV_FILE/invalidEndings.ics",
+                                "INV_FILE/InvalidLineEndings.ics",
+                                "INV_FILE/INV_FILE-missingCRLF.ics",
+                                "INV_FILE/MisspellllllThisName.ics",
+                                "INV_PRODID/NullPRODID1.ics",
+                                "INV_PRODID/NullPRODID2.ics",
+                                "INV_PRODID/NullPRODID3.ics",
+                                "INV_VER/INV_VERSION1.ics",
+                                "INV_VER/INV_VERSION2.ics",
+                                "INV_VER/MalformedVersion1.ics",
+                                "INV_VER/MalformedVersion2.ics",
+                                "INV_VER/NullVersion.ics",
+                                "OK/cis2170.ics",
+                                "OK/complexUnfolding.ics",
+                                "OK/EBOLA.ics",
+                                "OK/fuck_you.ics",
+                                "OK/fuckyou.ics",
+                                "OK/googleCalendarTest.ics",
+                                "OK/invite.ics",
+                                "OK/mLineProp1.ics",
+                                "OK/NestedMedley.ics",
+                                "OK/newCalendar.ics",
+                                "OK/properties.ics",
+                                "OK/testCalEvtPropAlm.ics",
+                                "OK/testCalEvtProp.ics",
+                                "OK/testCalSimpleNoUTC.ics",
+                                "OK/testCalSimpleUTCComments.ics",
+                                "OK/ValidFileFolding.ics",
+                                "OK/ValidFileSimple.ics",
+                                "OK/VALID-LINEFOLDSCOMMENTS.ics",
+                                "OK/VALID-LINEFOLDS.ics",
                                 NULL};
     Calendar *cal;
     int i = 0;
+    int written = 0;
     ICalErrorCode err;
     int choice;
+    char pathToFile[1000];
 
-    printf("Which calendar would you like to test? [0-%d, anything else for all]: ", NUM_FILES-1);
+    for (i = 0; i < NUM_FILES; i++) {
+        printf("%d - %s\n", i, files[i]);
+    }
+
+    printf("\nWhich calendar would you like to test? [0-%d, anything else for all]: ", NUM_FILES-1);
     scanf("%d", &choice);
 
     if (choice >= 0 && choice < NUM_FILES) {
+        strcpy(pathToFile, readPath);
+        strcat(pathToFile, files[choice]);
         printf("\n\n\n==========================================================================================\n");
-        printf("%s\n", files[choice]);
+        printf("%s\n", pathToFile);
         printf("==========================================================================================\n");
-        err = createCalendar(files[choice], &cal);
+        err = createCalendar(pathToFile, &cal);
 
         if (err != OK) {
             printErr = printError(err);
@@ -517,14 +527,28 @@ int main() {
             printf("------------------------------------------------------------------------------------------\n");
             printf("\"%s\"\n", printCal);
             free(printCal);
+
+            strcpy(pathToFile, writePath);
+            strcat(pathToFile, files[choice]);
+            printf("\nWriting Calendar to \"%s\"\n", pathToFile);
+            if ((err = writeCalendar(pathToFile, cal)) != OK) {
+                printErr = printError(err);
+                printf("\nAn error occurred: %s\n", printErr);
+                free(printErr);
+            } else {
+                printf("\nWrote \"%s\" successfully\n", pathToFile);
+            }
+
             deleteCalendar(cal);
         }
     } else {
         while (files[i] != NULL) {
+            strcpy(pathToFile, readPath);
+            strcat(pathToFile, files[choice]);
             printf("\n\n\n==========================================================================================\n");
-            printf("Index %d - %s\n", i, files[i]);
+            printf("Index %d - %s\n", i, pathToFile);
             printf("==========================================================================================\n");
-            err = createCalendar(files[i], &cal);
+            err = createCalendar(pathToFile, &cal);
 
             if (err != OK) {
                 printErr = printError(err);
@@ -534,17 +558,26 @@ int main() {
                 printCal = printCalendar(cal);
                 printf("\nPrinting Calendar from %s:\n\"%s\"\n", files[i], printCal);
                 free(printCal);
+
+                strcpy(pathToFile, writePath);
+                strcat(pathToFile, files[choice]);
+                printf("\nWriting Calendar to \"%s\"\n", pathToFile);
+                if ((err = writeCalendar(pathToFile, cal)) != OK) {
+                    printErr = printError(err);
+                    printf("\nAn error occurred: %s\n", printErr);
+                    free(printErr);
+                } else {
+                    printf("\nWrote \"%s\" successfully\n", pathToFile);
+                    written++;
+                }   
+
                 deleteCalendar(cal);
             }
 
             i++;
         }
-        printf("\n\nRan through %d calendars.\n", i);
+        printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
-
-
-
-
 
     return EXIT_SUCCESS;
 }
