@@ -372,7 +372,7 @@ ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
     ICalErrorCode err;
     fprintf(fout, "BEGIN:VCALENDAR\r\n");
     fprintf(fout, "VERSION:%.1f\r\n", obj->version);
-    fprintf(fout, "UID:%s\r\n", obj->UID);
+    fprintf(fout, "PRODID:%s\r\n", obj->prodID);
     if ((err = writeProperties(fout, obj->properties)) != OK) {
         return WRITE_ERROR;
     }
