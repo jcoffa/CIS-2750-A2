@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+DESCRIPTION:A simple calendar that tests parsing of properties.
+  It contains properties that are not associated with the Calendar object
+  itself (i.e. STATUS and ORGANIZER) and therefore should not be used as an
+  example of a properly formatted iCal object.
+STATUS:CONFIRMED
+ORGANIZER;CN="John Smith":mailto:johnsmith@webmail.ca
+BEGIN:VEVENT
+uid:436726784932
+DTSTART:11111111t111111
+DTSTAMP:11111111t111111
+END:VEVENT
+END:VCALENDAR
