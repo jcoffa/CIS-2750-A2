@@ -8,6 +8,7 @@
  ************************************/
 
 #include "CalendarParser.h"
+#include "CalendarHelper.h"
 #include "LinkedListAPI.h"
 #include "Parsing.h"
 #include "Initialize.h"
@@ -354,6 +355,32 @@ char* printError(ICalErrorCode err) {
  *@param obj - a pointer to a Calendar struct
  **/
 ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
+    FILE *fout;
+
+    if (fileName == NULL || obj == NULL) {
+        return WRITE_ERROR;
+    }
+
+    if (strcmp(fileName, "") == 0 || !endsWith(fileName, ".ics")) {
+        return WRITE_ERROR;
+    }
+    
+    if ((fout = fopen(fileName, "w")) == NULL) {
+        return WRITE_ERROR;
+    }
+
+    ICalErrorCode err;
+    fprintf(fout, "BEGIN:VCALENDAR\r\n");
+    fprintf(fout, "VERSION:%.1f\r\n", obj->version);
+    fprintf(fout, "UID:%s\r\n", obj->UID);
+    if ((err = writeProperties(fout, obj->properties)) != OK) {
+        return WRITE_ERROR;
+    }
+    if ((err = writeEvents(fout, obj->events)) != OK) {
+        return WRITE_ERROR;
+    }
+    fprintf(fout, "END:VCALENDAR\r\n");
+
     return OK;
 }
 
