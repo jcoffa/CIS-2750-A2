@@ -8,6 +8,7 @@
  ************************************/
 
 #include "CalendarHelper.h"
+#include "LinkedListHelper.h"
 
 ICalErrorCode writeProperties(FILE *fout, List *props) {
     if (fout == NULL || props == NULL) {
@@ -19,8 +20,8 @@ ICalErrorCode writeProperties(FILE *fout, List *props) {
     }
 
     Property *toWrite;
-    ListIterator iter = createIterator(props);
-    while ((toWrite = (Property *)nextElement(&iter)) != NULL) {
+    ListIterator iter = createReverseIterator(props);
+    while ((toWrite = (Property *)previousElement(&iter)) != NULL) {
         fprintf(fout, "%s%c%s\r\n", \
                 toWrite->propName, \
                 // The comparison below is essentially "does toWrite->propDescr contain a ':' character?"
@@ -44,9 +45,9 @@ ICalErrorCode writeEvents(FILE *fout, List *events) {
 
     ICalErrorCode err;
     Event *toWrite;
-    ListIterator iter = createIterator(events);
+    ListIterator iter = createReverseIterator(events);
     char dateTimeData[100];
-    while ((toWrite = (Event *)nextElement(&iter)) != NULL) {
+    while ((toWrite = (Event *)previousElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VEVENT\r\n");
         fprintf(fout, "UID:%s\r\n", toWrite->UID);
         if ((err = getDateTimeAsWritable(dateTimeData, toWrite->creationDateTime)) != OK) {
@@ -80,8 +81,8 @@ ICalErrorCode writeAlarms(FILE *fout, List *alarms) {
 
     ICalErrorCode err;
     Alarm *toWrite;
-    ListIterator iter = createIterator(alarms);
-    while ((toWrite = (Alarm *)nextElement(&iter)) != NULL) {
+    ListIterator iter = createReverseIterator(alarms);
+    while ((toWrite = (Alarm *)previousElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VALARM\r\n");
         fprintf(fout, "ACTION:%s\r\n", toWrite->action);
         fprintf(fout, "TRGIGER:%s\r\n", toWrite->trigger);

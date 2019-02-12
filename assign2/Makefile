@@ -12,8 +12,8 @@
 #############
 
 # files
-LIBS = CalendarParser.h LinkedListAPI.h Parsing.h Initialize.h CalendarHelper.h
-SHARED = list cal parsing init calhelp
+LIBS = CalendarParser.h LinkedListAPI.h Parsing.h Initialize.h CalendarHelper.h LinkedListHelper.h
+SHARED = list cal parsing init calhelp listhelp
 
 # update VPATH to search directories for files specified in rule preqrequisites
 SRC = src
@@ -31,7 +31,7 @@ LDFLAGS := -L. -L$(OUT) $(addprefix -l,$(SHARED))
 # Make Rules #
 ##############
 
-all: list parser libparsing.so libinit.so libcalhelp.so main
+all: list parser libparsing.so libinit.so libcalhelp.so liblisthelp.so main
 
 list: liblist.so
 
@@ -66,6 +66,12 @@ libcalhelp.so: CalendarHelper.o
 
 CalendarHelper.o: CalendarHelper.c CalendarHelper.h
 	$(CC) $(CFLAGS) -c -fpic $(SRC)/CalendarHelper.c -o $(OUT)/CalendarHelper.o
+
+liblisthelp.so: LinkedListHelper.o
+	$(CC) -shared $(OUT)/LinkedListHelper.o -o $(OUT)/liblisthelp.so
+
+LinkedListHelper.o: LinkedListHelper.c LinkedListHelper.h
+	$(CC) $(CFLAGS) -c -fpic $(SRC)/LinkedListHelper.c -o $(OUT)/LinkedListHelper.o
 
 main: main.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/main.c -o $(OUT)/main
