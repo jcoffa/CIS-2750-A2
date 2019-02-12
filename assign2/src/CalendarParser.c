@@ -371,8 +371,8 @@ ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
 
     ICalErrorCode err;
     fprintf(fout, "BEGIN:VCALENDAR\r\n");
-    fprintf(fout, "VERSION:%.1f\r\n", obj->version);
     fprintf(fout, "PRODID:%s\r\n", obj->prodID);
+    fprintf(fout, "VERSION:%.1f\r\n", obj->version);
     if ((err = writeProperties(fout, obj->properties)) != OK) {
         return WRITE_ERROR;
     }
@@ -392,7 +392,50 @@ ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
  *@param obj - a pointer to a Calendar struct
  **/
 ICalErrorCode validateCalendar(const Calendar* obj) {
-    return OK;
+	if (obj == NULL) {
+		return INV_CAL;
+	}
+
+	// check for NULL Calendar members
+	if (obj->prodID == NULL || obj->events == NULL || obj->properties == NULL) {
+		return INV_CAL;
+	}
+
+	// verify the version
+	if (obj->version <= 0.0) {
+		return INV_CAL;
+	}
+
+	// verify the product ID
+	if (strcmp("", obj->prodID) == 0) {
+		return INV_CAL;
+	}
+
+	// 'highestPriority' is necessary due to one of the last paragraphs of Module 2:
+	// 	"If the struct contains multiple errors, the error code should correspond to the highest level
+	// 	of error code that you encounter. For example, if the argument to validateCalendar contains:
+	// 	- an invalid Calendar property, and
+	// 	- an invalid Alarm component inside an Event component
+	// 	you must return INV_CAL, not INV_ALARM."
+	ICalErrorCode err, highestPriority;
+
+	// initialize to a dummy value of OK to symbolize no errors have been encountered
+	highestPriority = OK;
+
+	// verify events
+	if ((err = validateEvents(obj->events)) != OK) {
+		highestPriority = err;
+	}
+
+	// verify calendar properties
+	if ((err = validateProperties(obj->properties) != OK)) {
+		// determine the priority of the new error
+		highestPriortiy = higherPriority(highestPriority, err);
+	}
+
+	// Return the highest priority error. This variable is initialized to OK, so if no errors were encountered
+	// then it returns OK; indicative of a valid calendar with no errors.
+    return highestPriority;
 }
 
 
@@ -557,7 +600,6 @@ void deleteDate(void* toBeDeleted) {
  * if the times are the same as well.
  */
 int compareDates(const void* first, const void* second) {
-    /*
     DateTime *dt1 = (DateTime *)first;
     DateTime *dt2 = (DateTime *)second;
     int cmp;
@@ -571,10 +613,6 @@ int compareDates(const void* first, const void* second) {
     } // if dates are not the same, then return the date comparison below
 
     return cmp;
-    */
-
-    // This function is a stub for A1, so it returns 0
-    return 0;
 }
 
 /*
