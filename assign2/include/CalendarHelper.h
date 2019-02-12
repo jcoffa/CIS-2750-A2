@@ -30,4 +30,14 @@ ICalErrorCode writeAlarms(FILE *fout, List *alarms);
 
 ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt);
 
+ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr);
+
+ICalErrorCode validateEvents(List *events);
+
+ICalErrorCode validateAlarms(List *alarms);
+
+ICalErrorCode validateProperties(List *properties);
+
+ICalErrorCode validateDateTime(DateTime dt);
+
 #endif

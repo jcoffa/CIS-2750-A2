@@ -105,3 +105,146 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
     return OK;
 }
 
+ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr) {
+	switch (newErr) {
+		case INV_CAL:
+			currentHighest = newErr;
+			break;
+
+		case INV_EVENT:
+			if (currentHighest != INV_CAL) {
+				currentHighest = newErr;
+			}
+			break;
+
+		case INV_ALARM:
+			if (currentHighest != INV_CAL && currentHighest != INV_EVENT) {
+				currentHighest = newErr;
+			}
+			break;
+
+		case OTHER_ERROR:
+			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM) {
+				currentHighest = newErr;
+			}
+			break;
+
+		default:
+			// no other errors except the above should be encountered
+			fprintf(stderr, "In validateCalendar: encountered unnacounted for error with val %d\n", newErr);
+			break;
+	}
+
+	return currentHighest;
+}
+
+ICalErrorCode validateEvents(List *events) {
+	if (events == NULL) {
+		return INV_CAL;
+	}
+
+	// Calendars must have at least 1 event
+	if (getLength(events) < 1) {
+		return INV_CAL;
+	}
+
+	Event *ev;
+	ICalErrorCode err, highestPriority;
+	highestPriority = OK;
+	ListIterator iter = createIterator(events);
+
+	while ((ev = (Event *)nextElement(&iter)) != NULL) {
+		// validate UID
+		if (ev->UID == NULL) {
+			return INV_EVENT;
+		}
+
+		// UID can't be empty or longer than 1000 characters (including '\0')
+		int lenUID = strlen(ev->UID);
+		if (lenUID == 0 || lenUID >= 1000) {
+			return INV_EVENT;
+		}
+
+		// validate creation and start DateTimes
+		if ((err = validateDateTime(ev->creationDateTime) != OK)) {
+			if (err == INV_DT) {
+				return INV_EVENT;
+			}
+			highestPriority = higherPriority(highestPriority, err);
+		}
+		if ((err = validateDateTime(ev->startDateTime)) != OK) {
+			if (err == INV_DT) {
+				return INV_EVENT;
+			}
+			highestPriority = higherPriority(highestPriority, err);
+		}
+
+		// validate event properties
+		if (ev->properties == NULL) {
+			return INV_EVENT;
+		}
+		if ((err = validateProperties(ev->properties)) != OK) {
+			highestPriority = higherPriority(highestPriority, err);
+		}
+
+		// validate event alarms
+		if ((err = validateAlarms(ev->alarms)) != OK) {
+			highestPriority = higherPriority(highestPriority, err);
+		}
+	}
+
+	return highestPriority;
+}
+
+ICalErrorCode validateAlarms(List *alarms) {
+	if (alarms == NULL) {
+		return INV_CAL;
+	}
+
+	Alarm *alm;
+	ICalErrorCode err, highestPriority;
+	highestPriority = OK;
+	ListIterator iter = createIterator(alarms);
+
+	while ((alm = (Alarm *)nextElement(&iter)) != NULL) {
+		// validate action
+		if (alm->action == NULL) {
+			return INV_ALARM;
+		}
+
+		// action can't be empty or longer than 200 characters (including '\0')
+		int lenAction = strlen(alm->action);
+		if (lenAction == 0 || lenAction >= 200) {
+			return INV_ALARM;
+		}
+
+		// validate trigger
+		if (alm->trigger == NULL) {
+			return INV_ALARM;
+		}
+
+		// trigger can't be an empty string
+		if (strcmp("", alm->trigger) == 0) {
+			return INV_ALARM;
+		}
+
+		// validate alarm properties
+		if (alm->properties == NULL) {
+			return INV_ALARM;
+		}
+		if ((err = validateProperties(alm->properties)) != OK) {
+			highestPriority = higherPriority(highestPriority, err);
+		}
+	}
+
+	return highestPriority;
+}
+
+ICalErrorCode validateProperties(List *properties) {
+	// this one is going to be a monster
+}
+
+ICalErrorCode validateDateTime(DateTime dt) {
+
+}
+
