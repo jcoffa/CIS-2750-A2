@@ -10,6 +10,9 @@
 #include "CalendarHelper.h"
 #include "LinkedListHelper.h"
 
+/* Writes the property list 'props' to the file pointed to by 'fout' in the proper
+ * iCalendar syntax.
+ */
 ICalErrorCode writeProperties(FILE *fout, List *props) {
     if (fout == NULL || props == NULL) {
         return WRITE_ERROR;
@@ -34,6 +37,9 @@ ICalErrorCode writeProperties(FILE *fout, List *props) {
     return OK;
 }
 
+/* Writes the event list 'events' to the file pointed to by 'fout' in the proper
+ * iCalendar syntax, including opening and closing VEVENT tags.
+ */
 ICalErrorCode writeEvents(FILE *fout, List *events) {
     if (fout == NULL || events == NULL) {
         return WRITE_ERROR;
@@ -70,6 +76,9 @@ ICalErrorCode writeEvents(FILE *fout, List *events) {
     return OK;
 }
 
+/* Writes the alarm list 'alarms' to the file pointed to by 'fout' in the proper
+ * iCalendar syntax, including opening and closing VALARM tags.
+ */
 ICalErrorCode writeAlarms(FILE *fout, List *alarms) {
     if (fout == NULL || alarms == NULL) {
         return WRITE_ERROR;
@@ -95,6 +104,10 @@ ICalErrorCode writeAlarms(FILE *fout, List *alarms) {
     return OK;
 }
 
+/* Puts the relevent information from the Datetime structure 'dt' into the
+ * string 'result' using the proper iCalendar syntax so that it may be written
+ * to a file (after it is prepended by the proper DT___ tag).
+ */
 ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
     if (result == NULL) {
         return OTHER_ERROR;
@@ -105,6 +118,14 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
     return OK;
 }
 
+/* Returns the error code with the higher priority out of 'currentHighest' or 'newErr'.
+ * The error code heirarchy is as follows:
+ * 	1. INV_CAL
+ * 	2. INV_EVENT
+ * 	3. INV_ALARM
+ * 	4. INV_OTHER and INV_DT
+ * 	5. everything else
+ */
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr) {
 	switch (newErr) {
 		case INV_CAL:
@@ -124,20 +145,25 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 			break;
 
 		case OTHER_ERROR:
+		case INV_DT:
 			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM) {
 				currentHighest = newErr;
 			}
 			break;
 
 		default:
-			// no other errors except the above should be encountered
-			fprintf(stderr, "In validateCalendar: encountered unnacounted for error with val %d\n", newErr);
-			break;
+			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM \
+			    && currentHighest != OTHER_ERROR && currentHighest != INV_DT) {
+				currentHighest = newErr;
+			}
 	}
 
 	return currentHighest;
 }
 
+/* Validates a list of events to see if they
+ *
+ */
 ICalErrorCode validateEvents(List *events) {
 	if (events == NULL) {
 		return INV_CAL;
@@ -245,6 +271,29 @@ ICalErrorCode validateProperties(List *properties) {
 }
 
 ICalErrorCode validateDateTime(DateTime dt) {
+	int lenDate = strlen(dt.date);
+	int lenTime = strlen(dt.time);
 
+	// date must be of the form YYYYMMDD = 8 characters
+	// time must be of the form HHMMSS = 6 characters
+	if (lenDate != 8 || lenTime != 6) {
+		return INV_DT;
+	}
+
+	// check if the date contains only numbers
+	for (int i = 0; i < lenDate; i++) {
+		if (!isdigit((dt.date)[i])) {
+			return INV_DT;
+		}
+	}
+
+	// check if the time contains only numbers
+	for (int i = 0; i < lenTime; i++) {
+		if (!isdigit((dt.time)[i])) {
+			return INV_DT;
+		}
+	}
+
+	return OK;
 }
 

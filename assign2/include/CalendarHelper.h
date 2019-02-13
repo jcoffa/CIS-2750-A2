@@ -14,6 +14,7 @@
  * Libraries *
  *************/
 
+#include <ctype.h>
 #include <stdio.h>
 
 #include "CalendarParser.h"
