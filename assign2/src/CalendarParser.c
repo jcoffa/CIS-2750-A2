@@ -428,9 +428,9 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
 	}
 
 	// verify calendar properties
-	if ((err = validateProperties(obj->properties) != OK)) {
+	if ((err = validateProperties(obj->properties, CALENDAR) != OK)) {
 		// determine the priority of the new error
-		highestPriortiy = higherPriority(highestPriority, err);
+		highestPriority = higherPriority(highestPriority, err);
 	}
 
 	// Return the highest priority error. This variable is initialized to OK, so if no errors were encountered

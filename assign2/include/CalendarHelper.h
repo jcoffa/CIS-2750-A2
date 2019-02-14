@@ -19,6 +19,16 @@
 
 #include "CalendarParser.h"
 
+/****************
+ * Enumerations *
+ ****************/
+
+typedef enum type {
+	CALENDAR,
+	EVENT,
+	ALARM
+} Type;
+
 /***********************
  * Function Signatures *
  ***********************/
@@ -37,7 +47,13 @@ ICalErrorCode validateEvents(List *events);
 
 ICalErrorCode validateAlarms(List *alarms);
 
-ICalErrorCode validateProperties(List *properties);
+ICalErrorCode validateProperties(List *properties, Type type);
+
+ICalErrorCode validatePropertiesCal(List *properties);
+
+ICalErrorCode validatePropertiesEv(List *properties);
+
+ICalErrorCode validatePropertiesAl(List *properties);
 
 ICalErrorCode validateDateTime(DateTime dt);
 

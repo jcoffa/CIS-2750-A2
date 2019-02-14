@@ -120,11 +120,12 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
 
 /* Returns the error code with the higher priority out of 'currentHighest' or 'newErr'.
  * The error code heirarchy is as follows:
- * 	1. INV_CAL
- * 	2. INV_EVENT
- * 	3. INV_ALARM
- * 	4. INV_OTHER and INV_DT
- * 	5. everything else
+ * 		Priority lvl 5/5: INV_CAL
+ * 		Priority lvl 4/5: INV_EVENT
+ * 		Priority lvl 3/5: INV_ALARM
+ * 		Priority lvl 2/5: OTHER_ERROR
+ * 		Priority lvl 1/5: everything except OK
+ * 		Priority lvl 0/5: OK
  */
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr) {
 	switch (newErr) {
@@ -145,15 +146,21 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 			break;
 
 		case OTHER_ERROR:
-		case INV_DT:
 			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM) {
 				currentHighest = newErr;
 			}
 			break;
 
+		case OK:
+			// If 'currentHighest' is already OK, then replacing it with another OK does nothing.
+			// If 'currentHighest' isn't already OK, then nothing happens, since OK has the lowest priority.
+			// In any situation, if 'newErr' is OK, then nothing happens.
+			// This case is more for clarity and explanatory reasons than actual functionality.
+			break;
+
 		default:
 			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM \
-			    && currentHighest != OTHER_ERROR && currentHighest != INV_DT) {
+			    && currentHighest != OTHER_ERROR) {
 				currentHighest = newErr;
 			}
 	}
@@ -161,8 +168,11 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 	return currentHighest;
 }
 
-/* Validates a list of events to see if they
+/* Validates a list of events to determine whether each event conforms to the iCalendar
+ * specification. Returns the highest priority error, or OK if every event in the list
+ * conforms to the specification.
  *
+ * Highest priority error for this function: INV_EVENT (Priority lvl 4/5)
  */
 ICalErrorCode validateEvents(List *events) {
 	if (events == NULL) {
@@ -209,7 +219,7 @@ ICalErrorCode validateEvents(List *events) {
 		if (ev->properties == NULL) {
 			return INV_EVENT;
 		}
-		if ((err = validateProperties(ev->properties)) != OK) {
+		if ((err = validateProperties(ev->properties, EVENT)) != OK) {
 			highestPriority = higherPriority(highestPriority, err);
 		}
 
@@ -222,6 +232,12 @@ ICalErrorCode validateEvents(List *events) {
 	return highestPriority;
 }
 
+/* Validates a list of alarms to determine whether each alarm conforms to the iCalendar
+ * specification. Returns the highest priority error, or OK if every alarm in the list
+ * conforms to the specification.
+ *
+ * Highest priority error for this function: INV_ALARM (Priority lvl 3/5)
+ */
 ICalErrorCode validateAlarms(List *alarms) {
 	if (alarms == NULL) {
 		return INV_CAL;
@@ -258,7 +274,7 @@ ICalErrorCode validateAlarms(List *alarms) {
 		if (alm->properties == NULL) {
 			return INV_ALARM;
 		}
-		if ((err = validateProperties(alm->properties)) != OK) {
+		if ((err = validateProperties(alm->properties, ALARM)) != OK) {
 			highestPriority = higherPriority(highestPriority, err);
 		}
 	}
@@ -266,10 +282,45 @@ ICalErrorCode validateAlarms(List *alarms) {
 	return highestPriority;
 }
 
-ICalErrorCode validateProperties(List *properties) {
-	// this one is going to be a monster
+/* Validates a list of properties to determine whether each property conforms to the iCalendar
+ * specification. Returns the highest priority error, or OK if every property in the list
+ * conforms to the specification.
+ * Depending on the value of 'type', validateProperties() passes control to the proper
+ * property validation function. This is necessary since a property can be valid, but appear
+ * in an invalid location, which causes it to be invalid.
+ *
+ * For example, CALCSCALE:GREGORIAN is a valid property for a Calendar object. If one
+ * shows up outside of a Calendar, it is invalid even though the syntax is correct
+ * and the propeprty exists in the iCalendar specification.
+ *
+ * Highest priority error for this function: INV_CAL (Priority lvl 5/5)
+ */
+ICalErrorCode validateProperties(List *properties, Type type) {
+	ICalErrorCode toReturn;
+
+	switch (type) {
+		case CALENDAR:
+			toReturn = validatePropertiesCal(properties);
+			break;
+
+		case EVENT:
+			toReturn = validatePropertiesEv(properties);
+			break;
+
+		case ALARM:
+			toReturn = validatePropertiesAl(properties);
+			break;
+	}
+
+	return toReturn;
 }
 
+/* Validates a single DateTime to determine whether it conforms to the iCalendar
+ * specification. Returns the highest priority error, or OK if the DateTime
+ * conforms to the specification.
+ *
+ * Highest priority error for this function: INV_DT (Priority lvl 1/5)
+ */
 ICalErrorCode validateDateTime(DateTime dt) {
 	int lenDate = strlen(dt.date);
 	int lenTime = strlen(dt.time);
