@@ -8,11 +8,11 @@
 #ifndef _LIST_API_
 #define _LIST_API_
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * Node of a linked list. This list is doubly linked, meaning that it has points to both the node immediately in front 
