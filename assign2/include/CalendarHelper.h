@@ -15,6 +15,7 @@
  *************/
 
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "CalendarParser.h"
@@ -42,6 +43,8 @@ ICalErrorCode writeAlarms(FILE *fout, List *alarms);
 ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt);
 
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr);
+
+bool equalsOneOfStr(const char *toCompare, int numArgs, ...);
 
 ICalErrorCode validateEvents(List *events);
 

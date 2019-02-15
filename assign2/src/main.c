@@ -8,6 +8,7 @@
  ************************************/
 
 #include "CalendarParser.h"
+#include "CalendarHelper.h"
 #include "LinkedListAPI.h"
 #include "Parsing.h"
 #include "Initialize.h"
@@ -401,6 +402,7 @@ int main() {
 
 
 
+	/*
     printf("\n\n\n----------CALENDAR CREATION----------\n");
     char *printCal, *printErr;
 
@@ -578,6 +580,14 @@ int main() {
         }
         printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
+	*/
+
+	printf("----------EQUALSONEOFSTR----------\n");
+	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("dog", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("cat", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("elephant", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("snail", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("monkey", 4, "dog", "cat", "elephant", "snail"));
 
     return EXIT_SUCCESS;
 }

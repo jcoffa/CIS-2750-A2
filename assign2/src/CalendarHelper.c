@@ -168,6 +168,31 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 	return currentHighest;
 }
 
+/* Returns true if 'toCompare' matches one of the strings passed to the variable arguments list.
+ * Returns false otherwise.
+ *
+ * The number of variable arguments must be known and passed into the function for the variable 'numArgs'.
+ */
+bool equalsOneOfStr(const char *toCompare, int numArgs, ...) {
+	va_list ap;
+
+	// initialize 'ap', with 'numArgs' as the last known argument
+	va_start(ap, numArgs);
+
+	for (int i = 0; i < numArgs; i++) {
+		char *temp = va_arg(ap, char *);
+		if (strcmp(toCompare, temp) == 0) {
+			// 'toCompare' matches one of the strings passed
+			va_end(ap);
+			return true;
+		}
+	}
+
+	// 'toCompare' did not match any of the strings passed
+	va_end(ap);
+	return false;
+}
+
 /* Validates a list of events to determine whether each event conforms to the iCalendar
  * specification. Returns the highest priority error, or OK if every event in the list
  * conforms to the specification.
@@ -291,7 +316,7 @@ ICalErrorCode validateAlarms(List *alarms) {
  *
  * For example, CALCSCALE:GREGORIAN is a valid property for a Calendar object. If one
  * shows up outside of a Calendar, it is invalid even though the syntax is correct
- * and the propeprty exists in the iCalendar specification.
+ * and the property exists in the iCalendar specification.
  *
  * Highest priority error for this function: INV_CAL (Priority lvl 5/5)
  */
