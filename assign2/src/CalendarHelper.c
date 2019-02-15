@@ -168,12 +168,29 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 	return currentHighest;
 }
 
+/* Returns true if 'toCompare' matches one of the strings in the 'strings' array.
+ * Returns false otherwise.
+ *
+ * The number of strings must be known and passed into the function for the variable 'numArgs'.
+ */
+bool equalsOneOfStr(const char *toCompare, int numArgs, char **strings) {
+	for (int i = 0; i < numArgs; i++) {
+		if (strcmp(toCompare, strings[i]) == 0) {
+			// 'toCompare' matches one of the strings passed
+			return true;
+		}
+	}
+
+	// 'toCompare' did not match any of the strings passed
+	return false;
+}
+
 /* Returns true if 'toCompare' matches one of the strings passed to the variable arguments list.
  * Returns false otherwise.
  *
  * The number of variable arguments must be known and passed into the function for the variable 'numArgs'.
  */
-bool equalsOneOfStr(const char *toCompare, int numArgs, ...) {
+bool vequalsOneOfStr(const char *toCompare, int numArgs, ...) {
 	va_list ap;
 
 	// initialize 'ap', with 'numArgs' as the last known argument
@@ -338,6 +355,18 @@ ICalErrorCode validateProperties(List *properties, Type type) {
 	}
 
 	return toReturn;
+}
+
+ICalErrorCode validatePropertiesCal(List *properties) {
+	return OK;
+}
+
+ICalErrorCode validatePropertiesEv(List *properties) {
+	return OK;
+}
+
+ICalErrorCode validatePropertiesAl(List *properties) {
+	return OK;
 }
 
 /* Validates a single DateTime to determine whether it conforms to the iCalendar

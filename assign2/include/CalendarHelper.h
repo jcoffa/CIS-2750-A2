@@ -30,6 +30,23 @@ typedef enum type {
 	ALARM
 } Type;
 
+/**********************
+ * Property constants *
+ **********************/
+
+#define NUM_CALPROPNAMES 4
+const char *calPropNames[NUM_CALPROPNAMES] = {"CALSCALE", "METHOD", "PRODID", "VERSION"};
+
+#define NUM_EVENTPROPNAMES 31
+const char *evtPropNames[NUM_EVENTPROPNAMES] = {"ATTACH", "ATTENDEE", "CATEGORIES", "CLASS", "COMMENT", \
+	"CONTACT", "CREATED", "DESCRIPTION", "DTEND", "DTSTAMP", "DTSTART", "DURATION", "EXDATE", "EXRULE", \
+	"GEO", "LAST-MOD", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURID", "RELATED", "RESOURCES", \
+	"RRULE", "RSTATUS", "SEQ", "STATUS", "SUMMARY", "TRANSP", "UID", "URL"};
+
+#define NUM_ALARMPROPNAMES 8
+const char *alPropNames[NUM_ALARMPROPNAMES] = {"ACTION", "ATTACH", "ATTENDEE", "DESCRIPTION", "DURATION", \
+	"REPEAT", "SUMMARY", "TRIGGER"};
+
 /***********************
  * Function Signatures *
  ***********************/
@@ -44,7 +61,9 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt);
 
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr);
 
-bool equalsOneOfStr(const char *toCompare, int numArgs, ...);
+bool equalsOneOfStr(const char *toCompare, int numArgs, char **strings);
+
+bool vequalsOneOfStr(const char *toCompare, int numArgs, ...);
 
 ICalErrorCode validateEvents(List *events);
 
