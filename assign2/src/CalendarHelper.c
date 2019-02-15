@@ -357,16 +357,67 @@ ICalErrorCode validateProperties(List *properties, Type type) {
 	return toReturn;
 }
 
+/* Validates a list of properties to determine whether each property conforms to the iCalendar
+ * specification with respect to the valid properties of the Calendar itself.
+ * Returns the highest priority error, or OK if every property in the list conforms to the specification.
+ *
+ * Highest priority error for this function: INV_CAL (Priority lvl 5/5)
+ */
 ICalErrorCode validatePropertiesCal(List *properties) {
-	return OK;
+	if (properties == NULL) {
+		return OTHER_ERROR;
+	}
+
+	ICalErrorCode highestPriority = OK;
+	Property *prop;
+	ListIterator iter = createIterator(properties);
+	while ((prop = (Property *)nextElement(&iter)) != NULL) {
+		// validate
+	}
+
+	return highestPriority;
 }
 
+/* Validates a list of properties to determine whether each property conforms to the iCalendar
+ * specification with respect to the valid properties of an Event.
+ * Returns the highest priority error, or OK if every property in the list conforms to the specification.
+ *
+ * Highest priority error for this function: INV_EVENT (Priority lvl 4/5)
+ */
 ICalErrorCode validatePropertiesEv(List *properties) {
-	return OK;
+	if (properties == NULL) {
+		return OTHER_ERROR;
+	}
+
+	ICalErrorCode highestPriority = OK;
+	Property *prop;
+	ListIterator iter = createIterator(properties);
+	while ((prop = (Property *)nextElement(&iter)) != NULL) {
+		// validate
+	}
+
+	return highestPriority;
 }
 
+/* Validates a list of properties to determine whether each property conforms to the iCalendar
+ * specification with respect to the valid properties of an Alarm.
+ * Returns the highest priority error, or OK if every property in the list conforms to the specification.
+ *
+ * Highest priority error for this function: INV_ALARM (Priority lvl 3/5)
+ */
 ICalErrorCode validatePropertiesAl(List *properties) {
-	return OK;
+	if (properties == NULL) {
+		return OTHER_ERROR;
+	}
+
+	ICalErrorCode highestPriority = OK;
+	Property *prop;
+	ListIterator iter = createIterator(properties);
+	while ((prop = (Property *)nextElement(&iter)) != NULL) {
+		// validate
+	}
+
+	return highestPriority;
 }
 
 /* Validates a single DateTime to determine whether it conforms to the iCalendar
