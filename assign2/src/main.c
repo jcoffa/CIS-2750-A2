@@ -582,12 +582,25 @@ int main() {
     }
 	*/
 
-	printf("----------EQUALSONEOFSTR----------\n");
-	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("dog", 4, "dog", "cat", "elephant", "snail"));
-	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("cat", 4, "dog", "cat", "elephant", "snail"));
-	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("elephant", 4, "dog", "cat", "elephant", "snail"));
-	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("snail", 4, "dog", "cat", "elephant", "snail"));
-	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("monkey", 4, "dog", "cat", "elephant", "snail"));
+	printf("\n----------EQUALSONEOFSTR----------\n");
+	char *animals[] = {"dog", "cat", "elephant", "snail"};
+
+	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("dog", 4, animals));
+	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("cat", 4, animals));
+	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("elephant", 4, animals));
+	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("snail", 4, animals));
+	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("monkey", 4, animals));
+
+
+
+
+
+	printf("\n----------VEQUALSONEOFSTR----------\n");
+	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("dog", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("cat", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("elephant", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("snail", 4, "dog", "cat", "elephant", "snail"));
+	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("monkey", 4, "dog", "cat", "elephant", "snail"));
 
     return EXIT_SUCCESS;
 }
