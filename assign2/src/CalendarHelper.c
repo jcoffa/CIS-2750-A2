@@ -391,10 +391,45 @@ ICalErrorCode validatePropertiesCal(List *properties) {
 	ICalErrorCode highestPriority = OK;
 	Property *prop;
 	ListIterator iter = createIterator(properties);
+
+	printf("-----STARTED validatePropertiesCal()-----\n");
+
 	while ((prop = (Property *)nextElement(&iter)) != NULL) {
-		// validate
+		switch (equalsOneOfStr(prop->propName, NUM_CALPROPNAMES, calPropNames)) {
+			case -1:
+				// the property name did not match any valid Calendar property names
+				highestPriority = INV_CAL;
+				break;
+
+			case 0:
+				printf("\tValidate CALSCALE\n");
+				break;
+
+			case 1:
+				printf("\tValidate METHOD\n");
+				break;
+
+			case 2:
+				// This should never happen for a valid calendar: Calendar structs have a unique
+				// variable to store the PRODID and it should never be in the property list.
+				printf("\tValidate PRODID\n");
+				break;
+
+			case 3:
+				// This should never happen for a valid calendar: Calendar structs have a unique
+				// variable to store the VERSION and it should never be in the property list.
+				printf("\tValidate VERSION\n");
+				break;
+		}
+
+		// a check to fail faster in the case where the highest priority error has already been reached
+		if (highestPriority == INV_CAL) {
+			printf("-----END validatePropertiesCal()-----\n");
+			return INV_CAL;
+		}
 	}
 
+	printf("-----END validatePropertiesCal()-----\n");
 	return highestPriority;
 }
 
@@ -409,13 +444,151 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 		return OTHER_ERROR;
 	}
 
+	printf("\t----START validatePropertiesEv()-----\n");
 	ICalErrorCode highestPriority = OK;
 	Property *prop;
 	ListIterator iter = createIterator(properties);
 	while ((prop = (Property *)nextElement(&iter)) != NULL) {
-		// validate
+		switch (equalsOneOfStr(prop->propName, NUM_EVENTPROPNAMES, eventPropNames)) {
+			case -1:
+				// the property name did not match any valid Event property names
+				highestPriority = INV_EVENT;
+				break;
+
+			case 0:
+				printf("\t\tValidate ATTACH\n");
+				break;
+
+			case 1:
+				printf("\t\tValidate ATTENDEE\n");
+				break;
+
+			case 2:
+				printf("\t\tValidate CATEGORIES\n");
+				break;
+
+			case 3:
+				printf("\t\tValidate CLASS\n");
+				break;
+
+			case 4:
+				printf("\t\tValidate COMMENT\n");
+				break;
+
+			case 5:
+				printf("\t\tValidate CONTACT\n");
+				break;
+
+			case 6:
+				printf("\t\tValidate CREATED\n");
+				break;
+
+			case 7:
+				printf("\t\tValidate DESCRIPTION\n");
+				break;
+
+			case 8:
+				printf("\t\tValidate DTEND\n");
+				break;
+
+			case 9:
+				printf("\t\tValidate DTSTAMP\n");
+				break;
+
+			case 10:
+				// error
+				printf("\t\tValidate DTSTART\n");
+				break;
+
+			case 11:
+				printf("\t\tValidate DURATION\n");
+				break;
+
+			case 12:
+				printf("\t\tValidate EXDATE\n");
+				break;
+
+			case 13:
+				printf("\t\tValidate EXRULE\n");
+				break;
+
+			case 14:
+				printf("\t\tValidate GEO\n");
+				break;
+
+			case 15:
+				printf("\t\tValidate LAST-MOD\n");
+				break;
+
+			case 16:
+				printf("\t\tValidate LOCATION\n");
+				break;
+
+			case 17:
+				printf("\t\tValidate ORGANIZER\n");
+				break;
+
+			case 18:
+				printf("\t\tValidate PRIORITY\n");
+				break;
+
+			case 19:
+				printf("\t\tValidate RDATE\n");
+				break;
+
+			case 20:
+				printf("\t\tValidate RECURID\n");
+				break;
+
+			case 21:
+				printf("\t\tValidate RELATED\n");
+				break;
+
+			case 22:
+				printf("\t\tValidate RESOURCES\n");
+				break;
+
+			case 23:
+				printf("\t\tValidate RRULE\n");
+				break;
+
+			case 24:
+				printf("\t\tValidate RSTATUS\n");
+				break;
+
+			case 25:
+				printf("\t\tValidate SEQ\n");
+				break;
+
+			case 26:
+				printf("\t\tValidate STATUS\n");
+				break;
+
+			case 27:
+				printf("\t\tValidate SUMMARY\n");
+				break;
+
+			case 28:
+				printf("\t\tValidate TRANSP\n");
+				break;
+
+			case 29:
+				printf("\t\tValidate UID\n");
+				break;
+
+			case 30:
+				printf("\t\tValidate URL\n");
+				break;
+		}
+
+		// a check to fail faster in the case where the highest priority error has already been reached
+		if (highestPriority == INV_EVENT) {
+			printf("\t-----END validatePropertiesEv()-----\n");
+			return INV_EVENT;
+		}
 	}
 
+	printf("\t-----END validatePropertiesEv()-----\n");
 	return highestPriority;
 }
 
@@ -430,13 +603,57 @@ ICalErrorCode validatePropertiesAl(List *properties) {
 		return OTHER_ERROR;
 	}
 
+	printf("\t\t-----START validtePropertiesAl()-----\n");
 	ICalErrorCode highestPriority = OK;
 	Property *prop;
 	ListIterator iter = createIterator(properties);
 	while ((prop = (Property *)nextElement(&iter)) != NULL) {
-		// validate
+		switch (equalsOneOfStr(prop->propName, NUM_ALARMPROPNAMES, alarmPropNames)) {
+			case -1:
+				highestPriority = INV_ALARM;
+				break;
+
+			case 0:
+				printf("\t\t\tValidate ACTION\n");
+				break;
+
+			case 1:
+				printf("\t\t\tValidate ATTACH\n");
+				break;
+
+			case 2:
+				printf("\t\t\tValidate ATTENDEE\n");
+				break;
+
+			case 3:
+				printf("\t\t\tValidate DESCRIPTION\n");
+				break;
+
+			case 4:
+				printf("\t\t\tValidate DURATION\n");
+				break;
+
+			case 5:
+				printf("\t\t\tValidate REPEAT\n");
+				break;
+
+			case 6:
+				printf("\t\t\tValidate SUMMARY\n");
+				break;
+
+			case 7:
+				printf("\t\t\tValidate TRIGGER\n");
+				break;
+		}
+
+		// a check to fail faster in the case where the highest priority error has already been reached
+		if (highestPriority == INV_ALARM) {
+			printf("\t\t-----END validatePropertiesAl()-----\n");
+			return INV_ALARM;
+		}
 	}
 
+	printf("\t\t-----END validatePropertiesAl()-----\n");
 	return highestPriority;
 }
 
