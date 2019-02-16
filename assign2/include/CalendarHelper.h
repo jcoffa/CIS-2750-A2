@@ -61,9 +61,9 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt);
 
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr);
 
-bool equalsOneOfStr(const char *toCompare, int numArgs, char **strings);
+int equalsOneOfStr(const char *toCompare, int numArgs, const char **strings);
 
-bool vequalsOneOfStr(const char *toCompare, int numArgs, ...);
+int vequalsOneOfStr(const char *toCompare, int numArgs, ...);
 
 ICalErrorCode validateEvents(List *events);
 

@@ -9,6 +9,7 @@
 
 #include "CalendarHelper.h"
 #include "LinkedListHelper.h"
+#include "Parsing.h"
 
 /* Writes the property list 'props' to the file pointed to by 'fout' in the proper
  * iCalendar syntax.
@@ -168,46 +169,55 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 	return currentHighest;
 }
 
-/* Returns true if 'toCompare' matches one of the strings in the 'strings' array.
- * Returns false otherwise.
+/* Returns the index of the string in 'strings' that matches the string 'toCompare'.
+ * Returns -1 if 'toCompare' didn't match any of them.
+ * This function uses case insensitive string comparison.
  *
  * The number of strings must be known and passed into the function for the variable 'numArgs'.
  */
-bool equalsOneOfStr(const char *toCompare, int numArgs, char **strings) {
+int equalsOneOfStr(const char *toCompare, int numArgs, const char **strings) {
+	char *upper = strUpperCopy(toCompare);
+
 	for (int i = 0; i < numArgs; i++) {
-		if (strcmp(toCompare, strings[i]) == 0) {
+		if (strcmp(upper, strings[i]) == 0) {
 			// 'toCompare' matches one of the strings passed
-			return true;
+			free(upper);
+			return i;
 		}
 	}
 
 	// 'toCompare' did not match any of the strings passed
-	return false;
+	free(upper);
+	return -1;
 }
 
-/* Returns true if 'toCompare' matches one of the strings passed to the variable arguments list.
- * Returns false otherwise.
+/* Returns the index of the string in the variable arguments list that matches the string 'toCompare'.
+ * Returns -1 if 'toCompare' didn't match any of them.
+ * * This function uses case insensitive string comparison.
  *
  * The number of variable arguments must be known and passed into the function for the variable 'numArgs'.
  */
-bool vequalsOneOfStr(const char *toCompare, int numArgs, ...) {
+int vequalsOneOfStr(const char *toCompare, int numArgs, ...) {
 	va_list ap;
+	char *upper = strUpperCopy(toCompare);
 
 	// initialize 'ap', with 'numArgs' as the last known argument
 	va_start(ap, numArgs);
 
 	for (int i = 0; i < numArgs; i++) {
 		char *temp = va_arg(ap, char *);
-		if (strcmp(toCompare, temp) == 0) {
+		if (strcmp(upper, temp) == 0) {
 			// 'toCompare' matches one of the strings passed
+			free(upper);
 			va_end(ap);
-			return true;
+			return i;
 		}
 	}
 
 	// 'toCompare' did not match any of the strings passed
+	free(upper);
 	va_end(ap);
-	return false;
+	return -1;
 }
 
 /* Validates a list of events to determine whether each event conforms to the iCalendar
@@ -269,6 +279,11 @@ ICalErrorCode validateEvents(List *events) {
 		if ((err = validateAlarms(ev->alarms)) != OK) {
 			highestPriority = higherPriority(highestPriority, err);
 		}
+
+		// a check to fail faster in the case where the highest priority error has already been reached
+		if (highestPriority == INV_EVENT) {
+			return INV_EVENT;
+		}
 	}
 
 	return highestPriority;
@@ -318,6 +333,11 @@ ICalErrorCode validateAlarms(List *alarms) {
 		}
 		if ((err = validateProperties(alm->properties, ALARM)) != OK) {
 			highestPriority = higherPriority(highestPriority, err);
+		}
+
+		// a check to fail faster in the case where the highest priority error has already been reached
+		if (highestPriority == INV_ALARM) {
+			return INV_ALARM;
 		}
 	}
 
