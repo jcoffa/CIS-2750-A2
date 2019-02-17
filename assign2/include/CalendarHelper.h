@@ -25,10 +25,10 @@
  ****************/
 
 typedef enum type {
-	CALENDAR,
-	EVENT,
-	ALARM
-} Type;
+	Audio,
+	Display,
+	Email
+} AlarmActionType;
 
 /**********************
  * Property constants *
@@ -37,9 +37,9 @@ typedef enum type {
 #define NUM_CALPROPNAMES 4
 const char *calPropNames[NUM_CALPROPNAMES] = {"CALSCALE", "METHOD", "PRODID", "VERSION"};
 
-#define NUM_EVENTPROPNAMES 31
+#define NUM_EVENTPROPNAMES 30
 const char *eventPropNames[NUM_EVENTPROPNAMES] = {"ATTACH", "ATTENDEE", "CATEGORIES", "CLASS", "COMMENT", \
-	"CONTACT", "CREATED", "DESCRIPTION", "DTEND", "DTSTAMP", "DTSTART", "DURATION", "EXDATE", "EXRULE", \
+	"CONTACT", "CREATED", "DESCRIPTION", "DTEND", "DTSTAMP", "DTSTART", "DURATION", "EXDATE", \
 	"GEO", "LAST-MOD", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURID", "RELATED", "RESOURCES", \
 	"RRULE", "RSTATUS", "SEQ", "STATUS", "SUMMARY", "TRANSP", "UID", "URL"};
 
@@ -69,13 +69,11 @@ ICalErrorCode validateEvents(List *events);
 
 ICalErrorCode validateAlarms(List *alarms);
 
-ICalErrorCode validateProperties(List *properties, Type type);
-
 ICalErrorCode validatePropertiesCal(List *properties);
 
 ICalErrorCode validatePropertiesEv(List *properties);
 
-ICalErrorCode validatePropertiesAl(List *properties);
+ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type);
 
 ICalErrorCode validateDateTime(DateTime dt);
 
