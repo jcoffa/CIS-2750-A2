@@ -251,13 +251,6 @@ void deleteCalendar(Calendar* obj) {
  *@param obj - a pointer to a Calendar struct
 **/
 char* printCalendar(const Calendar* obj) {
-    char *toReturn = malloc(20000);
-
-    // check for malloc failing
-    if (toReturn == NULL) {
-        return NULL;
-    }
-
     if (obj == NULL) {
         return NULL;
     }
@@ -265,10 +258,18 @@ char* printCalendar(const Calendar* obj) {
     char *eventListStr = toString(obj->events);
     char *propertyListStr = toString(obj->properties);
 
+	int size = strlen(eventListStr) + strlen(propertyListStr) + 1000;
+	char *toReturn = malloc(size);
+
+    // check for malloc failing
+    if (toReturn == NULL) {
+        return NULL;
+    }
+
     // A neat little function I found that allows for string creation using printf
     // format specifiers. Makes stringing information together in a string like this
     // much easier than using strcat() repeatedly!
-    snprintf(toReturn, 20000, "Start CALENDAR: {VERSION=%.2f, PRODID=%s, Start EVENTS={%s\n} End EVENTS, Start PROPERTIES={%s\n} End PROPERTIES}, End CALENDAR", \
+    snprintf(toReturn, size, "Start CALENDAR: {VERSION=%.2f, PRODID=%s, Start EVENTS={%s\n} End EVENTS, Start PROPERTIES={%s\n} End PROPERTIES}, End CALENDAR", \
              obj->version, obj->prodID, eventListStr, propertyListStr);
 
     free(eventListStr);
@@ -407,16 +408,17 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
 	}
 
 	// verify the product ID
-	if (strcmp("", obj->prodID) == 0) {
+	int lenID = strlen(obj->prodID);
+	if (lenID <= 0 || lenID >= 1000) {
 		return INV_CAL;
 	}
 
 	// 'highestPriority' is necessary due to one of the last paragraphs of Module 2:
-	// 	"If the struct contains multiple errors, the error code should correspond to the highest level
-	// 	of error code that you encounter. For example, if the argument to validateCalendar contains:
-	// 	- an invalid Calendar property, and
-	// 	- an invalid Alarm component inside an Event component
-	// 	you must return INV_CAL, not INV_ALARM."
+	//	"If the struct contains multiple errors, the error code should correspond to the highest level
+	//	of error code that you encounter. For example, if the argument to validateCalendar contains:
+	//	- an invalid Calendar property, and
+	//	- an invalid Alarm component inside an Event component
+	//	you must return INV_CAL, not INV_ALARM."
 	ICalErrorCode err, highestPriority;
 
 	// initialize to a dummy value of OK to symbolize no errors have been encountered
