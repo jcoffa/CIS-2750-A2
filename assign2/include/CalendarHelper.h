@@ -77,4 +77,6 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type);
 
 ICalErrorCode validateDateTime(DateTime dt);
 
+bool propNamesEqual(const void *first, const void *second);
+
 #endif

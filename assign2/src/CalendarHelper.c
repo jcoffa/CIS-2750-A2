@@ -849,3 +849,10 @@ ICalErrorCode validateDateTime(DateTime dt) {
 	return OK;
 }
 
+bool propNamesEqual(const void *first, const void *second) {
+	Property *p1 = (Property *)first;
+	Property *p2 = (Property *)second;
+
+	return strcmp(p1->propName, p2->propName) == 0;
+}
+
