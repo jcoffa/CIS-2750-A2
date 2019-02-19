@@ -195,7 +195,7 @@ Calendar* JSONtoCalendar(const char* str);
  **/
 Event* JSONtoEvent(const char* str);
 
-/** Function to adding an Event struct to an ixisting Calendar struct
+/** Function to adding an Event struct to an existing Calendar struct
  *@pre arguments are not NULL
  *@post The new event has been added to the calendar's events list
  *@return N/A
