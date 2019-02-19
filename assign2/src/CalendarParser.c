@@ -447,7 +447,14 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
  *@return A string in JSON format
  *@param prop - a DateTime struct
  **/
-char* dtToJSON(DateTime prop);
+char* dtToJSON(DateTime prop) {
+	char *toReturn = malloc(1000);
+
+	int written = snprintf(toReturn, 1000, "{\"date\":\"%s\",\"time\":\"%s\",\"isUTC\":%s}", prop.date, prop.time, \
+	                       (prop.UTC) ? "true" : "false");
+
+	return realloc(toReturn, written + 1);
+}
 
 /** Function to converting an Event into a JSON string
  *@pre Event is not NULL
@@ -455,7 +462,37 @@ char* dtToJSON(DateTime prop);
  *@return A string in JSON format
  *@param event - a pointer to an Event struct
  **/
-char* eventToJSON(const Event* event);
+char* eventToJSON(const Event* event) {
+	char *toReturn;
+	int written;
+
+	if (event == NULL) {
+		// In the case where an event is NULL, an empty JSON string is returned
+		toReturn = malloc(3);
+		strcpy(toReturn, "{}");
+		written = 2;
+	} else {
+		char *startDT = dtToJSON(event->startDateTime);
+
+		// Create a dummy property to find the "SUMMARY" property in 'event', if it exists
+		Property *dummy = malloc(sizeof(Property));
+		strcpy(dummy->propName, "SUMMARY");
+		Property *summary = findElement(event->properties, propNamesEqual, dummy);
+
+		// Allocate memory depending on whether a SUMMARY property needs to be written
+		int size = (summary == NULL) ? 500 : strlen(summary->propDescr) + 500;
+		toReturn = malloc(size);
+
+		// Write the JSON in toReturn
+		written = snprintf(toReturn, size, "{\"startDT\":%s,\"numProps\":%d,\"numAlarms\":%d,\"summary\":\"%s\"}", \
+		                   startDT, getLength(event->properties), getLength(event->alarms), \
+		                   // findElement returns NULL if the property could not be found in 'event',
+		                   // in which case an empty string is written instead of the summary properties description
+		                   (summary == NULL) ? "" : summary->propDescr);
+	}
+
+	return realloc(toReturn, written + 1);
+}
 
 /** Function to converting an Event list into a JSON string
  *@pre Event list is not NULL
@@ -463,7 +500,40 @@ char* eventToJSON(const Event* event);
  *@return A string in JSON format
  *@param eventList - a pointer to an Event list
  **/
-char* eventListToJSON(const List* eventList);
+char* eventListToJSON(const List* eventList) {
+	char *toReturn, *tempEvJSON;
+	int currentLength;
+
+	if (eventList == NULL || getLength(eventList) == 0) {
+		toReturn = malloc(3);
+		strcpy(toReturn, "[]");
+		return toReturn;
+	}
+
+	// Start by putting the initial bracket '[' in the JSON
+	toReturn = malloc(2);
+	strcpy(toReturn, "[");
+	currentLength = 2;
+
+	// Add all the event JSON's to 'toReturn'
+	ListIterator iter = createIterator(eventList);
+	Event *ev;
+	while ((ev = (Event *)nextElement(&iter)) != NULL) {
+		tempEvJSON = eventToJSON(ev);
+		currentLength += strlen(tempEvJSON) + 1;
+		toReturn = realloc(toReturn, currentLength);
+
+		strcat(toReturn, tempEvJSON);
+		strcat(toReturn, ",");
+
+		free(tempEvJSON);
+	}
+
+	// There will always be a trailing comma at the very end of the string
+	toReturn[currentLength-1] = ']';
+
+	return toReturn;
+}
 
 /** Function to converting a Calendar into a JSON string
  *@pre Calendar is not NULL
@@ -471,7 +541,22 @@ char* eventListToJSON(const List* eventList);
  *@return A string in JSON format
  *@param cal - a pointer to a Calendar struct
  **/
-char* calendarToJSON(const Calendar* cal);
+char* calendarToJSON(const Calendar* cal) {
+	char *toReturn;
+	int written;
+
+	if (cal == NULL) {
+		toReturn = malloc(3);
+		strcpy(toReturn, "{}");
+		return toReturn;
+	}
+
+	toReturn = malloc(2000);
+	written = snprintf(toReturn, 2000, "{\"version\":%.1f,\"prodID\":\"%s\",\"numProps\":%d,\"numEvents\":%d}", \
+	                   cal->version, cal->prodID, getLength(cal->properties) + 2, getLength(cal->events));
+
+	return realloc(toReturn, written + 1);
+}
 
 /** Function to converting a JSON string into a Calendar struct
  *@pre JSON string is not NULL
@@ -479,7 +564,24 @@ char* calendarToJSON(const Calendar* cal);
  *@return A newly allocated and partially initialized Calendar struct
  *@param str - a pointer to a string
  **/
-Calendar* JSONtoCalendar(const char* str);
+Calendar* JSONtoCalendar(const char* str) {
+	if (str == NULL) {
+		return NULL;
+	}
+
+	Calendar *toReturn;
+	if (initializeCalendar(&toReturn) != OK) {
+		return NULL;
+	}
+
+	// The JSON string 'str' is similar to the JSON string created by calendarToJSON(),
+	// except it lacks the list info.
+	if (sscanf(str, "{\"version\":%f,\"prodID\":\"%s\"}", &(toReturn->version), toReturn->prodID) < 2) {
+		return NULL;
+	}
+
+	return toReturn;
+}
 
 /** Function to converting a JSON string into an Event struct
  *@pre JSON string is not NULL
@@ -487,7 +589,23 @@ Calendar* JSONtoCalendar(const char* str);
  *@return A newly allocated and partially initialized Event struct
  *@param str - a pointer to a string
  **/
-Event* JSONtoEvent(const char* str);
+Event* JSONtoEvent(const char* str) {
+	if (str == NULL) {
+		return NULL;
+	}
+
+	Event *toReturn;
+	if (initializeEvent(&toReturn) != OK) {
+		return NULL;
+	}
+
+	// The JSON string 'str' contains only a "UID" field
+	if (sscanf(str, "{\"UID\":\"%s\"}", toReturn->UID) < 1) {
+		return NULL;
+	}
+
+	return toReturn;
+}
 
 /** Function to adding an Event struct to an ixisting Calendar struct
  *@pre arguments are not NULL
@@ -496,7 +614,14 @@ Event* JSONtoEvent(const char* str);
  *@param cal - a Calendar struct
  *@param toBeAdded - an Event struct
  **/
-void addEvent(Calendar* cal, Event* toBeAdded);
+void addEvent(Calendar* cal, Event* toBeAdded) {
+	if (cal == NULL || toBeAdded == NULL) {
+		return;
+	}
+
+	// The event must be specifically added to the END of the events list
+	insertBack(cal->events, toBeAdded);
+}
 
 // ************* List helper functions - MUST be implemented ***************
 
@@ -619,13 +744,18 @@ void deleteProperty(void* toBeDeleted) {
 }
 
 /*
- * Compares the names of two properties.
+ * Compares the names of two properties, then the values if their names are the same.
  */
 int compareProperties(const void* first, const void* second) {
     Property *p1 = (Property *)first;
     Property *p2 = (Property *)second;
+	int toReturn;
 
-    return strcmp(p1->propName, p2->propName);
+    if ((toReturn = strcmp(p1->propName, p2->propName)) == 0) {
+		toReturn = strcmp(p1->propDescr, p2->propDescr);
+	}
+
+	return toReturn;
 }
 
 /*
