@@ -16,8 +16,97 @@
 #define NUM_FILES 88
 
 int main() {
-    const char readPath[] = "/home/joseph/cis2750/a02/TEST/";
+    const char readPath[] = "/home/joseph/cis2750/a02/ReadTest/";
     const char writePath[] = "/home/joseph/cis2750/a02/WriteTest/";
+	const char *files[NUM_FILES+1] = {"AIDS/FAMINE.ics",
+                                "AIDS/LOSS.ics",
+                                "AIDS/PESTILENCE.ics",
+                                "AIDS/PLAGUE.ics",
+                                "AIDS/WAR.ics",
+                                "DUP_PRODID/DupPRODID1.ics",
+                                "DUP_PRODID/DupPRODID2.ics",
+                                "DUP_PRODID/DupPRODID3.ics",
+                                "DUP_VER/DupVersion1.ics",
+                                "DUP_VER/DupVersion2.ics",
+                                "DUP_VER/DupVersion3.ics",
+                                "INV_ALARM/invOpeningTag2.ics",
+                                "INV_ALARM/MissingAction.ics",
+                                "INV_ALARM/MissingClosingTag.ics",
+                                "INV_ALARM/MissingClosingTag2.ics",
+                                "INV_ALARM/MissingClosingTag3.ics",
+                                "INV_ALARM/MissingTrigger.ics",
+                                "INV_ALARM/NullAction.ics",
+                                "INV_ALARM/NullTrigger.ics",
+                                "INV_CAL/BadLine.ics",
+                                "INV_CAL/blankLine.ics",
+                                "INV_CAL/FUKU.ics",
+                                "INV_CAL/INV_CAL-wrongendtag.ics",
+                                "INV_CAL/invClosingTag1.ics",
+                                "INV_CAL/invClosingTag3.ics",
+                                "INV_CAL/invOpeningTag3.ics",
+                                "INV_CAL/MissingEndCalendar.ics",
+                                "INV_CAL/MissingEvent.ics",
+                                "INV_CAL/MissingEvent2.ics",
+                                "INV_CAL/MissingOpeningTag.ics",
+                                "INV_CAL/MissingOpeningTag2.ics",
+                                "INV_CAL/MissingOpeningTag3.ics",
+                                "INV_CAL/MissingPRODID.ics",
+                                "INV_CAL/MissingPRODID2.ics",
+                                "INV_CAL/MissingVER.ics",
+                                "INV_CAL/MissingVER2.ics",
+                                "INV_DT/InvalidCreationDate.ics",
+                                "INV_DT/InvalidStartDate.ics",
+                                "INV_DT/MalformedCreationDate.ics",
+                                "INV_DT/MalformedStartDate.ics",
+                                "INV_EVENT/invClosingTag2.ics",
+                                "INV_EVENT/INV_EVENT-blankUID.ics",
+                                "INV_EVENT/INV_EVENT-DTENDandDURA.ics",
+                                "INV_EVENT/INV_EVENT-dupURL.ics",
+                                "INV_EVENT/invOpeningTag1.ics",
+                                "INV_EVENT/MalformedUID.ics",
+                                "INV_EVENT/MissingClosingTag.ics",
+                                "INV_EVENT/MissingClosingTag2.ics",
+                                "INV_EVENT/MissingClosingTag3.ics",
+                                "INV_EVENT/MissingCreationDate.ics",
+                                "INV_EVENT/MissingStartDate.ics",
+                                "INV_EVENT/MissingUID.ics",
+                                "INV_EVENT/MissingUID2.ics",
+                                "INV_FILE/BadFileName.txt",
+                                "INV_FILE/BadFileName2.ical",
+                                "INV_FILE/BadFileName3.icss",
+                                "INV_FILE/EmptyString.ics",
+                                "INV_FILE/invalidEndings.ics",
+                                "INV_FILE/InvalidLineEndings.ics",
+                                "INV_FILE/INV_FILE-missingCRLF.ics",
+                                "INV_FILE/MisspellllllThisName.ics",
+                                "INV_PRODID/NullPRODID1.ics",
+                                "INV_PRODID/NullPRODID2.ics",
+                                "INV_PRODID/NullPRODID3.ics",
+                                "INV_VER/INV_VERSION1.ics",
+                                "INV_VER/INV_VERSION2.ics",
+                                "INV_VER/MalformedVersion1.ics",
+                                "INV_VER/MalformedVersion2.ics",
+                                "INV_VER/NullVersion.ics",
+                                "OK/cis2170.ics",
+                                "OK/complexUnfolding.ics",
+                                "OK/EBOLA.ics",
+                                "OK/fuck_you.ics",
+                                "OK/fuckyou.ics",
+                                "OK/googleCalendarTest.ics",
+                                "OK/invite.ics",
+                                "OK/mLineProp1.ics",
+                                "OK/NestedMedley.ics",
+                                "OK/newCalendar.ics",
+                                "OK/properties.ics",
+                                "OK/testCalEvtPropAlm.ics",
+                                "OK/testCalEvtProp.ics",
+                                "OK/testCalSimpleNoUTC.ics",
+                                "OK/testCalSimpleUTCComments.ics",
+                                "OK/ValidFileFolding.ics",
+                                "OK/ValidFileSimple.ics",
+                                "OK/VALID-LINEFOLDSCOMMENTS.ics",
+                                "OK/VALID-LINEFOLDS.ics",
+                                NULL};
 
     /*
     printf("----------WHITESPACE TRIMMING----------\n");
@@ -402,105 +491,18 @@ int main() {
 
 
 
-	/*
     printf("\n\n\n----------CALENDAR CREATION----------\n");
     char *printCal, *printErr;
 
     // FIXME This is a list of files that give memory errors FIXME
     // None!
-    char *files[NUM_FILES+1] = {"AIDS/FAMINE.ics",
-                                "AIDS/LOSS.ics",
-                                "AIDS/PESTILENCE.ics",
-                                "AIDS/PLAGUE.ics",
-                                "AIDS/WAR.ics",
-                                "DUP_PRODID/DupPRODID1.ics",
-                                "DUP_PRODID/DupPRODID2.ics",
-                                "DUP_PRODID/DupPRODID3.ics",
-                                "DUP_VER/DupVersion1.ics",
-                                "DUP_VER/DupVersion2.ics",
-                                "DUP_VER/DupVersion3.ics",
-                                "INV_ALARM/invOpeningTag2.ics",
-                                "INV_ALARM/MissingAction.ics",
-                                "INV_ALARM/MissingClosingTag.ics",
-                                "INV_ALARM/MissingClosingTag2.ics",
-                                "INV_ALARM/MissingClosingTag3.ics",
-                                "INV_ALARM/MissingTrigger.ics",
-                                "INV_ALARM/NullAction.ics",
-                                "INV_ALARM/NullTrigger.ics",
-                                "INV_CAL/BadLine.ics",
-                                "INV_CAL/blankLine.ics",
-                                "INV_CAL/FUKU.ics",
-                                "INV_CAL/INV_CAL-wrongendtag.ics",
-                                "INV_CAL/invClosingTag1.ics",
-                                "INV_CAL/invClosingTag3.ics",
-                                "INV_CAL/invOpeningTag3.ics",
-                                "INV_CAL/MissingEndCalendar.ics",
-                                "INV_CAL/MissingEvent.ics",
-                                "INV_CAL/MissingEvent2.ics",
-                                "INV_CAL/MissingOpeningTag.ics",
-                                "INV_CAL/MissingOpeningTag2.ics",
-                                "INV_CAL/MissingOpeningTag3.ics",
-                                "INV_CAL/MissingPRODID.ics",
-                                "INV_CAL/MissingPRODID2.ics",
-                                "INV_CAL/MissingVER.ics",
-                                "INV_CAL/MissingVER2.ics",
-                                "INV_DT/InvalidCreationDate.ics",
-                                "INV_DT/InvalidStartDate.ics",
-                                "INV_DT/MalformedCreationDate.ics",
-                                "INV_DT/MalformedStartDate.ics",
-                                "INV_EVENT/invClosingTag2.ics",
-                                "INV_EVENT/INV_EVENT-blankUID.ics",
-                                "INV_EVENT/INV_EVENT-DTENDandDURA.ics",
-                                "INV_EVENT/INV_EVENT-dupURL.ics",
-                                "INV_EVENT/invOpeningTag1.ics",
-                                "INV_EVENT/MalformedUID.ics",
-                                "INV_EVENT/MissingClosingTag.ics",
-                                "INV_EVENT/MissingClosingTag2.ics",
-                                "INV_EVENT/MissingClosingTag3.ics",
-                                "INV_EVENT/MissingCreationDate.ics",
-                                "INV_EVENT/MissingStartDate.ics",
-                                "INV_EVENT/MissingUID.ics",
-                                "INV_EVENT/MissingUID2.ics",
-                                "INV_FILE/BadFileName.txt",
-                                "INV_FILE/BadFileName2.ical",
-                                "INV_FILE/BadFileName3.icss",
-                                "INV_FILE/EmptyString.ics",
-                                "INV_FILE/invalidEndings.ics",
-                                "INV_FILE/InvalidLineEndings.ics",
-                                "INV_FILE/INV_FILE-missingCRLF.ics",
-                                "INV_FILE/MisspellllllThisName.ics",
-                                "INV_PRODID/NullPRODID1.ics",
-                                "INV_PRODID/NullPRODID2.ics",
-                                "INV_PRODID/NullPRODID3.ics",
-                                "INV_VER/INV_VERSION1.ics",
-                                "INV_VER/INV_VERSION2.ics",
-                                "INV_VER/MalformedVersion1.ics",
-                                "INV_VER/MalformedVersion2.ics",
-                                "INV_VER/NullVersion.ics",
-                                "OK/cis2170.ics",
-                                "OK/complexUnfolding.ics",
-                                "OK/EBOLA.ics",
-                                "OK/fuck_you.ics",
-                                "OK/fuckyou.ics",
-                                "OK/googleCalendarTest.ics",
-                                "OK/invite.ics",
-                                "OK/mLineProp1.ics",
-                                "OK/NestedMedley.ics",
-                                "OK/newCalendar.ics",
-                                "OK/properties.ics",
-                                "OK/testCalEvtPropAlm.ics",
-                                "OK/testCalEvtProp.ics",
-                                "OK/testCalSimpleNoUTC.ics",
-                                "OK/testCalSimpleUTCComments.ics",
-                                "OK/ValidFileFolding.ics",
-                                "OK/ValidFileSimple.ics",
-                                "OK/VALID-LINEFOLDSCOMMENTS.ics",
-                                "OK/VALID-LINEFOLDS.ics",
-                                NULL};
+	
+
+
     Calendar *cal;
     int i = 0;
     int written = 0;
-    ICalErrorCode err;
+    ICalErrorCode createErr, validateErr, writeErr;
     int choice;
     char pathToFile[1000];
 
@@ -517,15 +519,15 @@ int main() {
         printf("\n\n\n==========================================================================================\n");
         printf("%s\n", pathToFile);
         printf("==========================================================================================\n");
-        err = createCalendar(pathToFile, &cal);
+        createErr = createCalendar(pathToFile, &cal);
 
-        if (err != OK) {
-            printErr = printError(err);
+        if (createErr != OK) {
+            printErr = printError(createErr);
             printf("\nAn error occurred: %s\n", printErr);
             free(printErr);
         } else {
             printCal = printCalendar(cal);
-            printf("\nPrinting Calendar from %s:\n", files[choice]);
+            printf("\ncreateCalendar() returned OK. Printing Calendar from %s:\n", files[choice]);
             printf("------------------------------------------------------------------------------------------\n");
             printf("\"%s\"\n", printCal);
             free(printCal);
@@ -533,8 +535,8 @@ int main() {
             strcpy(pathToFile, writePath);
             strcat(pathToFile, files[choice]);
             printf("\nWriting Calendar to \"%s\"\n", pathToFile);
-            if ((err = writeCalendar(pathToFile, cal)) != OK) {
-                printErr = printError(err);
+            if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
+                printErr = printError(writeErr);
                 printf("\nAn error occurred: %s\n", printErr);
                 free(printErr);
             } else {
@@ -550,22 +552,30 @@ int main() {
             printf("\n\n\n==========================================================================================\n");
             printf("Index %d - %s\n", i, pathToFile);
             printf("==========================================================================================\n");
-            err = createCalendar(pathToFile, &cal);
+            createErr = createCalendar(pathToFile, &cal);
 
-            if (err != OK) {
-                printErr = printError(err);
+            if (createErr != OK) {
+                printErr = printError(createErr);
                 printf("\nAn error occurred: %s\n", printErr);
                 free(printErr);
             } else {
                 printCal = printCalendar(cal);
-                printf("\nPrinting Calendar from %s:\n\"%s\"\n", files[i], printCal);
+				printf("\ncreateCalendar() returned OK. Printing Calendar from %s:\n", files[i]);
+				printf("------------------------------------------------------------------------------------------\n");
+				printf("\"%s\"\n", printCal);
+
                 free(printCal);
+
+				validateErr = validateCalendar(cal);
+				char *printValidateErr = printError(validateErr);
+				printf("\nValidating calendar that was just created: %s, should be %s\n", printValidateErr, printErr);
+				free(printValidateErr);
 
                 strcpy(pathToFile, writePath);
                 strcat(pathToFile, files[choice]);
                 printf("\nWriting Calendar to \"%s\"\n", pathToFile);
-                if ((err = writeCalendar(pathToFile, cal)) != OK) {
-                    printErr = printError(err);
+                if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
+                    printErr = printError(writeErr);
                     printf("\nAn error occurred: %s\n", printErr);
                     free(printErr);
                 } else {
@@ -580,27 +590,33 @@ int main() {
         }
         printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
-	*/
 
+
+
+
+
+	/*
 	printf("\n----------EQUALSONEOFSTR----------\n");
-	char *animals[] = {"dog", "cat", "elephant", "snail"};
+	const char *animals[] = {"dog", "cat", "elephant", "snail"};
 
 	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("dog", 4, animals));
 	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("cat", 4, animals));
 	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("elephant", 4, animals));
 	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("snail", 4, animals));
 	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", equalsOneOfStr("monkey", 4, animals));
+	*/
 
 
 
 
-
+	/*
 	printf("\n----------VEQUALSONEOFSTR----------\n");
 	printf("Does \"dog\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("dog", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"cat\" equal one of\t\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("cat", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("elephant", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("snail", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("monkey", 4, "dog", "cat", "elephant", "snail"));
+	*/
 
     return EXIT_SUCCESS;
 }
