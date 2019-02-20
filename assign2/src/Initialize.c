@@ -42,6 +42,20 @@ ICalErrorCode initializeDateTime(const char *line, DateTime *dt) {
     // ignore everything before (and including) the property name and ':' or ';'
     strcpy(data, line + colonIndex + 1);
 
+	// Since we do not follow FORM #3 for DateTimes, a valid DT will always have either 15 or 16 characters.
+	// (8 date chars, 1 't' or 'T' time separator, 6 time chars, and 1 potential 'z' or 'Z' at the end)
+	int lenData = strlen(data);
+	if (lenData != 15 && lenData != 16) {
+		dt = NULL;
+		return INV_DT;
+	}
+
+	// there must be 8 date characters, so the 9th character must be the time separator
+	if (data[8] != 't' && data[8] != 'T') {
+		dt = NULL;
+		return INV_DT;
+	}
+
     // the first 8 characters is the date
     strncpy(dt->date, data, 8);
     (dt->date)[8] = '\0';   // strncpy does not automatically null-terminate

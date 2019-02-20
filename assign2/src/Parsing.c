@@ -241,7 +241,8 @@ ICalErrorCode readFold(char *unfolded, int size, FILE *fp) {
  * precisely like this one.)
  * XXX XXX XXX */
 ICalErrorCode getEvent(FILE *fp, Event **event) {
-    char line[10000], *parse;
+    char line[10000], *parse, *name, *descr;
+	char delim[] = ":;";
     ICalErrorCode error;
     bool dtStamp, dtStart, UID, endEvent;
     parse = NULL;
@@ -263,30 +264,45 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
             goto CLEANEV;
         }
 
+		if (line[0] == ';') {
+			// lines starting with a ';' are comments and should be ignored
+			continue;
+		}
+
         parse = strUpperCopy(line);
+		if ((name = strtok(parse, delim)) == NULL) {
+			// The line is only delimiters, which obviously is not allowed
+			free(parse);
+			parse = NULL;
+			error = INV_EVENT;
+			goto CLEANEV;
+		}
+
+		if ((descr = strtok(NULL, delim)) == NULL) {
+			// The line has no property description, or doesn't contain any delimiters
+			free(parse);
+			parse = NULL;
+			error = INV_EVENT;
+			goto CLEANEV;
+		}
         //fprintf(stdout, "\tDEBUG: in getEvent: unfolded, upper'd line: \"%s\"\n", parse);
 
         // This check can't be in the condition for the while loop, since
         // iCal files are case insensitive, and therefore the case must be
         // made uniform (i.e. put through strUpper) before checking.
-        if (strcmp(parse, "END:VEVENT") == 0) {
+        if (strcmp(name, "END") == 0 && strcmp(descr, "VEVENT") == 0) {
             //fprintf(stdout, "\tDEBUG: in getEvent: line containd END:VEVENT\n");
             endEvent = true;
             break;
         }
 
-        if (strcmp(parse, "END:VCALENDAR") == 0) {
+        if (strcmp(name, "END") == 0 && strcmp(descr, "VCALENDAR") == 0) {
             //fprintf(stdout, "\tDEBUG: in getEvent: hit the end of the calendar before the end of the event");
             error = INV_EVENT;
             goto CLEANEV;
         }
 
-        if (startsWith(parse, ";")) {
-            // lines that start with ';' are comments and should be ignored
-            free(parse);
-            parse = NULL;
-            continue;
-        } else if (startsWith(parse, "DTSTAMP")) {
+        if (strcmp(name, "DTSTAMP") == 0) {
             // creation date of event
             if (dtStamp) {
                 //fprintf(stdout, "\tDEBUG: in getEvent: found a second instance of a DTSTAMP property\n");
@@ -306,7 +322,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
             //free(printDTS);
 
             (*event)->creationDateTime = stamp;
-        } else if (startsWith(parse, "DTSTART")) {
+        } else if (strcmp(name, "DTSTART") == 0) {
             // start of event
             if (dtStart) {
                 //fprintf(stdout, "\tDEBUG: in getEvent: found a second instance of a DTSTART property\n");
@@ -326,7 +342,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
             //free(printDTStrt);
 
             (*event)->startDateTime = start;
-        } else if (startsWith(parse, "UID")) {
+        } else if (strcmp(name, "UID") == 0) {
             if (UID) {
                 //fprintf(stdout, "\tDEBUG: in getEvent: encountered a second UID property\n");
                 error = INV_EVENT;
@@ -342,7 +358,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
             UID = true;
 
             strcpy((*event)->UID, line + 4);
-        } else if (strcmp(parse, "BEGIN:VALARM") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VALARM") == 0) {
             Alarm *toAdd;
             if ((error = getAlarm(fp, &toAdd)) != OK) {
                 //fprintf(stdout, "\tDEBUG: in getEvent: encountered error when getting an Alarm\n");
@@ -350,11 +366,11 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
             }
 
             insertFront((*event)->alarms, (void *)toAdd);
-        } else if (strcmp(parse, "END:VALARM") == 0) {
+        } else if (strcmp(name, "END") == 0 && strcmp(descr, "VALARM") == 0) {
             //fprintf(stdout, "\tDEBUG: in getEvent: found duplicate end of alarm: \"%s\"\n", line);
             error = INV_EVENT;
             goto CLEANEV;
-        } else if (strcmp(parse, "BEGIN:VEVENT") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VEVENT") == 0) {
             //fprintf(stdout, "\tDEBUG: in getEvent: found start of new event \"%s\"\n", line);
             error = INV_EVENT;
             goto CLEANEV;
@@ -414,7 +430,8 @@ CLEANEV:    deleteEvent(*event);
  * precisely like this one.)
  * XXX XXX XXX */
 ICalErrorCode getAlarm(FILE *fp, Alarm **alarm) {
-    char line[10000], *parse;
+    char line[10000], *parse, *name, *descr;
+	char delim[] = ":;";
     bool trigger, action, endAlarm;
     ICalErrorCode error;
     parse = NULL;
@@ -437,30 +454,46 @@ ICalErrorCode getAlarm(FILE *fp, Alarm **alarm) {
             goto CLEANAL;
         }
 
+		if (line[0] == ';') {
+			// lines starting with a ';' are comments and shouldbe ignored
+			continue;
+		}
+
         parse = strUpperCopy(line);
+		if ((name = strtok(parse, delim)) == NULL) {
+			// The line is only delimiters, which obviously is not allowed
+			free(parse);
+			parse = NULL;
+			error = INV_ALARM;
+			goto CLEANAL;
+		}
+
+		if ((descr = strtok(NULL, delim)) == NULL) {
+			// The line has no property description, or doesn't contain any delimiters
+			free(parse);
+			parse = NULL;
+			error = INV_ALARM;
+			goto CLEANAL;
+		}
+
         //fprintf(stdout, "\tDEBUG: in getAlarm: unfolded, upper'd line: \"%s\"\n", parse);
 
         // This check can't be in the condition for the while loop, since
         // iCal files are case insensitive, and therefore the case must be
         // made uniform before checking.
-        if (strcmp(parse, "END:VALARM") == 0) {
+        if (strcmp(name, "END") == 0 && strcmp(descr, "VALARM") == 0) {
             //fprintf(stdout, "\tDEBUG: in getAlarm: hit END:VALARM\n");
             endAlarm = true;
             break;
         }
 
-        if (strcmp(parse, "END:VCALENDAR") == 0) {
+        if (strcmp(name, "END") == 0 && strcmp(descr, "VCALENDAR") == 0) {
             //fprintf(stdout, "\tDEBUG: in getAlarm: hit END:VCALENDAR\n");
             error = INV_ALARM;
             goto CLEANAL;
         }
 
-        if (startsWith(parse, ";")) {
-            // lines that start with ';' are comments and should be ignored
-            free(parse);
-            parse = NULL;
-            continue;
-        } else if (startsWith(parse, "TRIGGER")) {
+        if (strcmp(name, "TRIGGER") == 0) {
             if (trigger) {
                 //fprintf(stdout, "\tDEBUG: in getAlarm: found a second instance of a TRIGGER property\n");
                 error = INV_ALARM;
@@ -478,7 +511,7 @@ ICalErrorCode getAlarm(FILE *fp, Alarm **alarm) {
             (*alarm)->trigger = malloc(strlen(line) - 7);
             strcpy((*alarm)->trigger, line + 8);
             //fprintf(stdout, "\tDEBUG: in getAlarm: trigger = \"%s\"\n", (*alarm)->trigger);
-        } else if (startsWith(parse, "ACTION")) {
+        } else if (strcmp(name, "ACTION") == 0) {
             if (action) {
                 //fprintf(stdout, "\tDEBUG: in getAlarm: found a second instance of a ACTION property\n");
                 error = INV_ALARM;
@@ -494,7 +527,7 @@ ICalErrorCode getAlarm(FILE *fp, Alarm **alarm) {
 
             strcpy((*alarm)->action, line + 7);
             //fprintf(stdout, "\tDEBUG: in getAlarm: action = \"%s\"\n", (*alarm)->action);
-        } else if (strcmp(parse, "BEGIN:VALARM") == 0 || strcmp(parse, "BEGIN:VEVENT") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && (strcmp(descr, "VEVENT") == 0 || strcmp(descr, "VALARM") == 0)) {
             //fprintf(stdout, "\tDEBUG: in getAlarm: found a start of another alarm or event: \"%s\"\n", line);
             error = INV_ALARM;
             goto CLEANAL;
