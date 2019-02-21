@@ -241,8 +241,6 @@ void insertSorted(List *list, void *toBeAdded){
 		return;
 	}
 	
-	(list->length)++;
-
 	if (list->head == NULL){
 		insertBack(list, toBeAdded);
 		return;
@@ -276,6 +274,8 @@ void insertSorted(List *list, void *toBeAdded){
 			newNode->previous = currNode->previous;
 			currNode->previous->next = newNode;
 			currNode->previous = newNode;
+
+			(list->length)++;
 		
 			return;
 		}
