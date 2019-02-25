@@ -12,8 +12,8 @@
 #############
 
 # files
-LIBS = CalendarParser.h LinkedListAPI.h Parsing.h Initialize.h CalendarHelper.h LinkedListHelper.h
-SHARED = list cal parsing init calhelp listhelp
+LIBS = CalendarParser.h LinkedListAPI.h Parsing.h Initialize.h CalendarHelper.h LinkedListHelper.h Debug.h
+SHARED = list cal parsing init calhelp listhelp debug
 
 # update VPATH to search directories for files specified in rule preqrequisites
 SRC = src
@@ -31,7 +31,7 @@ LDFLAGS := -L. -L$(OUT) $(addprefix -l,$(SHARED))
 # Make Rules #
 ##############
 
-all: list parser libparsing.so libinit.so libcalhelp.so liblisthelp.so main
+all: list parser libparsing.so libinit.so libcalhelp.so liblisthelp.so libdebug.so main
 
 list: liblist.so
 
@@ -73,9 +73,20 @@ liblisthelp.so: LinkedListHelper.o
 LinkedListHelper.o: LinkedListHelper.c LinkedListHelper.h
 	$(CC) $(CFLAGS) -c -fpic $(SRC)/LinkedListHelper.c -o $(OUT)/LinkedListHelper.o
 
+libdebug.so: Debug.o
+	$(CC) -shared $(OUT)/Debug.o -o $(OUT)/libdebug.so
+
+Debug.o: Debug.c Debug.h
+	$(CC) $(CFLAGS) -c -fpic $(SRC)/Debug.c -o $(OUT)/Debug.o
+
 main: main.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/main.c -o $(OUT)/main
 
+mainWrite: writeCalendarTestContinued.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/writeCalendarTestContinued.c -o $(OUT)/mainWrite
+
+mainValidate: TestSuiteA2m2v2.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/TestSuiteA2m2v2.c -o $(OUT)/mainValidate
 
 
 #############
@@ -98,7 +109,18 @@ debug:
 	$(MAKE) main
 	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/main
 
+# Executes Jason's test harness for writeCalendar()
+write:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainWrite
+
+# Executes Jason's test harness for validateCalendar()
+validate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainValidate
+
 # removes all .o and .so files, and the main executable
 clean:
-	rm $(OUT)/*.o $(OUT)/*.so $(OUT)/main
+	rm -f $(OUT)/*.o $(OUT)/*.so $(OUT)/main $(OUT)/mainWrite $(OUT)/mainValidate ../WriteTest/*
 
