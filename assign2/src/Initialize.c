@@ -7,6 +7,7 @@
  *  Initialize.c                    *
  ************************************/
 
+#include "Debug.h"
 #include "Initialize.h"
 #include "Parsing.h"
 
@@ -22,6 +23,7 @@ ICalErrorCode initializeDateTime(const char *line, DateTime *dt) {
     const char delimTime[] = "Tt";
 
     if (line == NULL) {
+		errorMsg("Passed line is NULL\n");
         dt = NULL;
         return OTHER_ERROR;
     }
@@ -35,6 +37,7 @@ ICalErrorCode initializeDateTime(const char *line, DateTime *dt) {
     // or it follows FORM #3 of the DateTime forms (as stated in section 3.3.5
     // of the RFC 5545 iCal specification)
     if (colonIndex == len || tIndex == len || !isdigit(line[colonIndex+1])) {
+		errorMsg("DateTime does not conform to FORM #1 or FORM #2\n");
         dt = NULL;
         return INV_DT;
     }
@@ -46,12 +49,14 @@ ICalErrorCode initializeDateTime(const char *line, DateTime *dt) {
 	// (8 date chars, 1 't' or 'T' time separator, 6 time chars, and 1 potential 'z' or 'Z' at the end)
 	int lenData = strlen(data);
 	if (lenData != 15 && lenData != 16) {
+		errorMsg("DateTime is not 15 or 16 characters long: %d\n", lenData);
 		dt = NULL;
 		return INV_DT;
 	}
 
 	// there must be 8 date characters, so the 9th character must be the time separator
 	if (data[8] != 't' && data[8] != 'T') {
+		errorMsg("DateTime does not have a 't' or 'T' as the 9th character: %c\n", data[8]);
 		dt = NULL;
 		return INV_DT;
 	}
@@ -84,6 +89,7 @@ ICalErrorCode initializeProperty(const char *line, Property **prop) {
     int firstDelim, length;
 
     if (line == NULL) {
+		errorMsg("line passed is NULL\n");
         return OTHER_ERROR;
     }
 
@@ -91,14 +97,14 @@ ICalErrorCode initializeProperty(const char *line, Property **prop) {
         return OTHER_ERROR;
     }
 
-    //fprintf(stdout, "\tDEBUG: in initializeProperty: line = \"%s\"\n", line);
+    debugMsg("\tline = \"%s\"\n", line);
     firstDelim = strcspn(line, delim);
 
     // if these values are the same, then 'line' does not contain
     // any of the delimiting characters that are indicative of a property
     if (firstDelim == length) {
         // DateTime is malformed
-        //fprintf(stdout, "\tDEBUG: in initializeProperty: delim characters \"%s\" were not present in the line: \"%s\"\n", delim, line);
+        debugMsg("\tdelim characters \"%s\" were not present in the line: \"%s\"\n", delim, line);
         return INV_CAL;
     }
 
@@ -112,10 +118,11 @@ ICalErrorCode initializeProperty(const char *line, Property **prop) {
         return INV_CAL;
     }
 
-    //fprintf(stdout, "DEBUG: in initializeProperty: name=\"%s\", descr=\"%s\"\n", name, descr);
+    debugMsg("name=\"%s\", descr=\"%s\"\n", name, descr);
     *prop = malloc(sizeof(Property) + strlen(descr) + 1);
     if (*prop == NULL) {
         // malloc failed
+		errorMsg("malloc of Property failed\n");
         return OTHER_ERROR;
     }
 
@@ -137,6 +144,7 @@ ICalErrorCode initializeAlarm(Alarm **alm) {
     *alm = malloc(sizeof(Alarm));
     if (*alm == NULL) {
         // malloc failed
+		errorMsg("Alarm memory allocation failed\n");
         return OTHER_ERROR;
     }
 
@@ -146,6 +154,7 @@ ICalErrorCode initializeAlarm(Alarm **alm) {
 
     if ((*alm)->properties == NULL) {
         // list initialization failed
+		errorMsg("Alarm Property List initialization failed");
         return OTHER_ERROR;
     }
 
@@ -162,6 +171,7 @@ ICalErrorCode initializeEvent(Event **evt) {
     *evt = malloc(sizeof(Event));
     if (*evt == NULL) {
         // malloc failed
+		errorMsg("Event memory allocation failed\n");
         return OTHER_ERROR;
     }
 
@@ -179,6 +189,7 @@ ICalErrorCode initializeEvent(Event **evt) {
 
     if ((*evt)->properties == NULL || (*evt)->alarms == NULL) {
         // list initialization failed
+		errorMsg("Event Property or Alarms List initialization failed\n");
         return OTHER_ERROR;
     }
 
@@ -195,6 +206,7 @@ ICalErrorCode initializeCalendar(Calendar **cal) {
     *cal = malloc(sizeof(Calendar));
     if (*cal == NULL) {
         // malloc failed
+		errorMsg("Calendar memory allocation failed\n");
         return OTHER_ERROR;
     }
 
@@ -205,6 +217,7 @@ ICalErrorCode initializeCalendar(Calendar **cal) {
 
     if ((*cal)->events == NULL || (*cal)->properties == NULL) {
         // list initialization failed
+		errorMsg("Calendar Property or Event List initialization failed\n");
         return OTHER_ERROR;
     }
 
