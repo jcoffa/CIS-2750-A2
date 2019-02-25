@@ -1,4 +1,5 @@
 *.pdf
+*.zip
 assign2/bin/*
 vgcore*
 WriteTest/*
