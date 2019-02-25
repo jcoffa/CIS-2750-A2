@@ -32,15 +32,19 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     char *parse;
     version = prodID = method = beginCal = endCal = foundEvent = false;
 
+	debugMsg("-----START createCalendar()-----\n");
+
     // Prof said not to check for obj being NULL, but you can't dereference a NULL pointer,
     // so I think he meant "don't worry if *obj = NULL, since it is being overwritten", and in
     // order to dereference it then the double pointer passed into the function can't be NULL.
     if (obj == NULL) {
+		errorMsg("\tprovided obj is NULL\n");
         return OTHER_ERROR;
     }
 
     // filename can't be null or an empty string, and must end with the '.ics' extension
     if (fileName == NULL || strcmp(fileName, "") == 0 || !endsWith(fileName, ".ics")) {
+		errorMsg("\tInvalid fileName. fileName = \"%s\"\n", fileName);
         *obj = NULL;
         return INV_FILE;
     }
@@ -49,6 +53,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 
     // Check that file was found/opened correctly
     if (fin == NULL) {
+		errorMsg("\tFile could not be found/opened properly\n");
         // On a failure, the obj argument is set to NULL and an error code is returned
         *obj = NULL;
         return INV_FILE;
@@ -56,6 +61,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 
     // allocate memory for the Calendar and all its components
     if ((error = initializeCalendar(obj)) != OK) {
+		errorMsg("\tCould not initializeCalendar() for some reason\n");
         return error;
     }
 
@@ -64,18 +70,22 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
         // readFold returns NULL when the raw line does not end with a \r\n sequence
         // (i.e. the file has invalid line endings)
         if ((error = readFold(line, 10000, fin)) != OK) {
+			errorMsg("\treadFold() failed for some reason\n");
             cleanup(obj, NULL, fin);
             return error;
         }
 
+		debugMsg("\tLine read : \"%s\"\n", line);
+
         parse = strUpperCopy(line);
 
-        //fprintf(stdout, "DEBUG: in createCalendar: upper'd line = \"%s\"\n", parse);
+        //debugMsg("upper'd line = \"%s\"\n", parse);
 
         // Empty lines/lines containing just whitespace are NOT permitted
         // by the iCal specification.
         // (readFold function automatically trims whitespace)
         if (strlen(parse) == 0) {
+			errorMsg("\tLine read contained all whitespace\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
         }
@@ -91,12 +101,14 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
         // Check if the END:VCALENDAR has been hit. If it has, and there is still more file to be read,
         // then something has gone wrong.
         if (endCal) {
+			errorMsg("\tMore lines after hitting END:VCALENDAR\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
         }
 
         // The first non-commented line must be BEGIN:VCALENDAR
-        if (!beginCal && !strcmp(parse, "BEGIN:VCALENDAR") == 0) {
+        if (!beginCal && strcmp(parse, "BEGIN:VCALENDAR") != 0) {
+			errorMsg("\tFirst non-comment line was not BEGIN:VCALENDAR\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
         } else if (!beginCal) {
@@ -109,11 +121,12 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
         // add properties, alarms, events, and other elements to the calendar
         if (startsWith(parse, "VERSION:")) {
             if (version) {
+				errorMsg("\tEncountered duplicate version\n");
                 cleanup(obj, parse, fin);
                 return DUP_VER;
             }
 
-            //fprintf(stdout, "DEBUG: in createCalendar: found VERSION line: \"%s\"\n", line);
+            //debugMsg("found VERSION line: \"%s\"\n", line);
             char *endptr;
             // +8 to start conversion after the 'VERSION:' part of the string
             (*obj)->version = strtof(line + 8, &endptr);
@@ -121,45 +134,51 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             if (strlen(line + 8) == 0 || line+8 == endptr || *endptr != '\0') {
                 // VERSION property contains no data after the ':', or the data
                 // could not be converted into a number
+				errorMsg("\tVERSION property could not be coerced into an integer properly: \"%s\"\n", line);
                 cleanup(obj, parse, fin);
                 return INV_VER;
             }
 
-            //fprintf(stdout, "DEBUG: in createCalendar: set version to %f\n", (*obj)->version);
+            //debugMsg("set version to %f\n", (*obj)->version);
             version = true;
         } else if (startsWith(parse, "PRODID:")) {
             if (prodID) {
+				errorMsg("\tDuplicate PRODID\n");
                 cleanup(obj, parse, fin);
                 return DUP_PRODID;
             }
 
             // PRODID: contains no information
             if (strlen(line + 7) == 0) {
+				errorMsg("\tPRODID empty\n");
                 cleanup(obj, parse, fin);
                 return INV_PRODID;
             }
 
             // +7 to only copy characters past 'PRODID:' part of the string
-            //fprintf(stdout, "DEBUG: in createCalendar: found PRODID line: \"%s\"\n", line);
+            //debugMsg("found PRODID line: \"%s\"\n", line);
             strcpy((*obj)->prodID, line + 7);
-            //fprintf(stdout, "DEBUG: in createCalendar: set product ID to\"%s\"\n", (*obj)->prodID);
+            //debugMsg("set product ID to\"%s\"\n", (*obj)->prodID);
             prodID = true;
         } else if (startsWith(parse, "METHOD:")) {
             if (method) {
+				errorMsg("\tDuplicate METHOD\n");
                 cleanup(obj, parse, fin);
                 return INV_CAL;
             }
 
             // METHOD: contains no information
             if (strlen(line + 7) == 0) {
+				errorMsg("\tMETHOD empty\n");
                 cleanup(obj, parse, fin);
                 return INV_CAL;
             }
 
-            //fprintf(stdout, "DEBUG: in createCalendar: found METHOD line: \"%s\"\n", line);
+            //debugMsg("found METHOD line: \"%s\"\n", line);
             Property *methodProp;
             if ((error = initializeProperty(line, &methodProp)) != OK) {
                 // something happened, and the property could not be created properly
+				errorMsg("\tinitializeProperty() failed somehow with line \"%s\"\n", line);
                 cleanup(obj, parse, fin);
                 return INV_CAL;
             }
@@ -170,12 +189,14 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             endCal = true;
         } else if (strcmp(parse, "BEGIN:VCALENDAR") == 0) {
             // only 1 calendar allowed per file
+			errorMsg("\tDuplicate BEGIN:VCALENDAR\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
         } else if (strcmp(parse, "BEGIN:VEVENT") == 0) {
             Event *event;
             if ((error = getEvent(fin, &event)) != OK) {
                 // something happened, and the event could not be created properly
+				errorMsg("\tgetEvent() failed somehow\n");
                 cleanup(obj, parse, fin);
                 return error;
             }
@@ -184,27 +205,28 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             insertFront((*obj)->events, (void *)event);
         } else if (strcmp(parse, "BEGIN:VALARM") == 0) {
             // there can't be an alarm for an entire calendar
-            //fprintf(stdout, "ERROR: in createCalendar: found an alarm not in an event\n");
+            errorMsg("found an alarm not in an event\n");
             cleanup(obj, parse, fin);
             return INV_ALARM;
         } else if (strcmp(parse, "END:VEVENT") == 0 || strcmp(parse, "END:VALARM") == 0) {
             // a duplicated END tag was found
-            //fprintf(stdout, "Found a duplicated END tag: \"%s\"\n", line);
+            errorMsg("Found a duplicated END tag: \"%s\"\n", line);
             cleanup(obj, parse, fin);
             return INV_CAL;
         } else {
             // All other BEGIN: clauses have been handled in their own 'else if' case.
             // If another one is hit, then it is an error.
             if (startsWith(parse, "BEGIN:")) {
-                //fprintf(stdout, "ERROR: in createCalendar: Found an illegal BEGIN: \"%s\"\n", line);
+				errorMsg("\tFound illegal BEGIN: \"%s\"\n", line);
                 cleanup(obj, parse, fin);
                 return INV_CAL;
             }
 
-            //fprintf(stdout, "DEBUG: in createCalendar: found non-mandatory property: \"%s\"\n", line);
+            //debugMsg("found non-mandatory property: \"%s\"\n", line);
             Property *prop;
             if ((error = initializeProperty(line, &prop)) != OK) {
                 // something happened, and the property could not be created properly
+				errorMsg("\tinitializeProperty() failed somehow with line \"%s\"\n", line);
                 cleanup(obj, parse, fin);
                 return INV_CAL;
             }
@@ -220,6 +242,8 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     // Calendars require a few mandatory elements. If one does not have
     // any of these properties/lines, it is invalid.
     if (!endCal || !foundEvent || !version || !prodID) {
+		errorMsg("\tMissing required property: endCal=%s, foundEvent=%d, version=%d, prodID=%d\n", \
+		         endCal, foundEvent, version, prodID);
         cleanup(obj, parse, NULL);
         return INV_CAL;
     }
@@ -227,6 +251,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     // the file has been parsed, mandatory properties have been found,
     // and the calendar is valid (or at least valid with respect to
     // the syntax of an iCalendar file)
+	debugMsg("\t-----END createCalendar()-----\n");
     return OK;
 }
 
@@ -358,15 +383,23 @@ char* printError(ICalErrorCode err) {
 ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
     FILE *fout;
 
+	debugMsg("-----START writeCalendar()-----\n");
+
     if (fileName == NULL || obj == NULL) {
+		errorMsg("\tEither fileName or obj is NULL. fileName == NULL: %d, obj == NULL: %d\n", \
+		         fileName == NULL, obj == NULL);
         return WRITE_ERROR;
     }
 
     if (strcmp(fileName, "") == 0 || !endsWith(fileName, ".ics")) {
+		errorMsg("\tfileName is empty or does not end with .ics extension. fileName=\"%s\"\n", fileName);
         return WRITE_ERROR;
     }
+
+	debugMsg("\tfileName = \"%s\"\n", fileName);
     
     if ((fout = fopen(fileName, "w")) == NULL) {
+		errorMsg("\tfile \"%s\" could not be opened for writing for some reason.\n", fileName);
         return WRITE_ERROR;
     }
 
@@ -374,13 +407,25 @@ ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
     fprintf(fout, "BEGIN:VCALENDAR\r\n");
     fprintf(fout, "PRODID:%s\r\n", obj->prodID);
     fprintf(fout, "VERSION:%.1f\r\n", obj->version);
-    if ((err = writeProperties(fout, obj->properties)) != OK) {
+
+	debugMsg("\tWrote BEGIN:VCALENDAR, prodID, and version\n");
+    
+	if ((err = writeProperties(fout, obj->properties)) != OK) {
+		errorMsg("\twriteProperties() failed somehow\n");
+		fclose(fout);
         return WRITE_ERROR;
     }
     if ((err = writeEvents(fout, obj->events)) != OK) {
+		errorMsg("\twriteEvents() failed somehow\n");
+		fclose(fout);
         return WRITE_ERROR;
     }
     fprintf(fout, "END:VCALENDAR\r\n");
+
+	fclose(fout);
+
+	debugMsg("\tWrote END:VCALENDAR\n");
+	debugMsg("\t-----END writeCalendar()-----\n");
 
     return OK;
 }
@@ -393,23 +438,29 @@ ICalErrorCode writeCalendar(char* fileName, const Calendar* obj) {
  *@param obj - a pointer to a Calendar struct
  **/
 ICalErrorCode validateCalendar(const Calendar* obj) {
+	debugMsg("-----START validateCalendar()----\n");
 	if (obj == NULL) {
+		errorMsg("\tCalendar pointer is NULL\n");
 		return INV_CAL;
 	}
 
 	// check for NULL Calendar members
 	if (obj->prodID == NULL || obj->events == NULL || obj->properties == NULL) {
+		errorMsg("\tEncountered NULL Calendar member. prodId == NULL: %d, events == NULL: %d, properties == NULL: %d\n", \
+		         obj->prodID == NULL, obj->events == NULL, obj->properties == NULL);
 		return INV_CAL;
 	}
 
 	// verify the version
 	if (obj->version <= 0.0) {
+		errorMsg("\tInvalid version: %f\n", obj->version);
 		return INV_CAL;
 	}
 
 	// verify the product ID
 	int lenID = strlen(obj->prodID);
 	if (lenID <= 0 || lenID >= 1000) {
+		errorMsg("\tCalendar PRODID invalid length: %d\n", lenID);
 		return INV_CAL;
 	}
 
@@ -420,23 +471,33 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
 	//	- an invalid Alarm component inside an Event component
 	//	you must return INV_CAL, not INV_ALARM."
 	ICalErrorCode err, highestPriority;
+	char *printErr;
 
 	// initialize to a dummy value of OK to symbolize no errors have been encountered
 	highestPriority = OK;
 
 	// verify events
 	if ((err = validateEvents(obj->events)) != OK) {
+		printErr = printError(err);
+		debugMsg("\tvalidateEvents() returned an error: %s\n", printErr);
+		free(printErr);
 		highestPriority = err;
 	}
 
 	// verify calendar properties
 	if ((err = validatePropertiesCal(obj->properties) != OK)) {
+		printErr = printError(err);
+		debugMsg("\tvalidatePropertiesCal() returned an error: %s\n", printErr);
+		free(printErr);
 		// determine the priority of the new error
 		highestPriority = higherPriority(highestPriority, err);
 	}
 
 	// Return the highest priority error. This variable is initialized to OK, so if no errors were encountered
 	// then it returns OK; indicative of a valid calendar with no errors.
+	printErr = printError(err);
+	notifyMsg("\tRETURN ERROR: %s\n", printErr);
+	free(printErr);
     return highestPriority;
 }
 
@@ -504,7 +565,8 @@ char* eventListToJSON(const List* eventList) {
 	char *toReturn, *tempEvJSON;
 	int currentLength;
 
-	if (eventList == NULL || getLength(eventList) == 0) {
+	// Casting a List * into a List * to avoid a warning regarding non-const parameters
+	if (eventList == NULL || getLength((List *)eventList) == 0) {
 		toReturn = malloc(3);
 		strcpy(toReturn, "[]");
 		return toReturn;
@@ -516,7 +578,8 @@ char* eventListToJSON(const List* eventList) {
 	currentLength = 2;
 
 	// Add all the event JSON's to 'toReturn'
-	ListIterator iter = createIterator(eventList);
+	// Casting a List * into a List * to avoid a warning regarding non-const parameters
+	ListIterator iter = createIterator((List *)eventList);
 	Event *ev;
 	while ((ev = (Event *)nextElement(&iter)) != NULL) {
 		tempEvJSON = eventToJSON(ev);
