@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include "CalendarParser.h"
+#include "Debug.h"
 
 /****************
  * Enumerations *
@@ -40,7 +41,7 @@ const char *calPropNames[NUM_CALPROPNAMES] = {"CALSCALE", "METHOD", "PRODID", "V
 #define NUM_EVENTPROPNAMES 30
 const char *eventPropNames[NUM_EVENTPROPNAMES] = {"ATTACH", "ATTENDEE", "CATEGORIES", "CLASS", "COMMENT", \
 	"CONTACT", "CREATED", "DESCRIPTION", "DTEND", "DTSTAMP", "DTSTART", "DURATION", "EXDATE", \
-	"GEO", "LAST-MOD", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURID", "RELATED", "RESOURCES", \
+	"GEO", "LAST-MODIFIED", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURID", "RELATED", "RESOURCES", \
 	"RRULE", "RSTATUS", "SEQ", "STATUS", "SUMMARY", "TRANSP", "UID", "URL"};
 
 #define NUM_ALARMPROPNAMES 8
