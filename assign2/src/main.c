@@ -12,11 +12,12 @@
 #include "LinkedListAPI.h"
 #include "Parsing.h"
 #include "Initialize.h"
+#include "Debug.h"
 
-#define NUM_FILES 88
+#define NUM_FILES 89
 
 int main() {
-    const char readPath[] = "/home/joseph/cis2750/a02/ReadTest/";
+    const char readPath[] = "/home/joseph/cis2750/a02/TEST/";
     const char writePath[] = "/home/joseph/cis2750/a02/WriteTest/";
 	const char *files[NUM_FILES+1] = {"AIDS/FAMINE.ics",
                                 "AIDS/LOSS.ics",
@@ -106,6 +107,7 @@ int main() {
                                 "OK/ValidFileSimple.ics",
                                 "OK/VALID-LINEFOLDSCOMMENTS.ics",
                                 "OK/VALID-LINEFOLDS.ics",
+                                "OK/validation.ics",
                                 NULL};
 
     /*
@@ -492,7 +494,7 @@ int main() {
 
 
     printf("\n\n\n----------CALENDAR CREATION----------\n");
-    char *printCal, *printErr;
+    char *printCal, *printErrorCode;
 
     // FIXME This is a list of files that give memory errors FIXME
     // None!
@@ -514,6 +516,9 @@ int main() {
     scanf("%d", &choice);
 
     if (choice >= 0 && choice < NUM_FILES) {
+		//
+		// A specific calendar from the readPath has been chosen
+		//
         strcpy(pathToFile, readPath);
         strcat(pathToFile, files[choice]);
         printf("\n\n\n==========================================================================================\n");
@@ -522,30 +527,45 @@ int main() {
         createErr = createCalendar(pathToFile, &cal);
 
         if (createErr != OK) {
-            printErr = printError(createErr);
-            printf("\nAn error occurred: %s\n", printErr);
-            free(printErr);
+			// Error occurred while reading calendar
+            printErrorCode = printError(createErr);
+            printf("\nAn error occurred: %s\n", printErrorCode);
+            free(printErrorCode);
         } else {
+			// Calendar was created successfully
+			printf(BR_GREEN "\nCalendar created successfully!" RESET " Printing...\n");
+
             printCal = printCalendar(cal);
-            printf("\ncreateCalendar() returned OK. Printing Calendar from %s:\n", files[choice]);
             printf("------------------------------------------------------------------------------------------\n");
             printf("\"%s\"\n", printCal);
             free(printCal);
 
+			// Run the calendar through 'validateCalendar'
+			validateErr = validateCalendar(cal);
+			char *printValidateErr = printError(validateErr);
+			printErrorCode = printError(createErr);
+			printf("\nvalidateCalendar() return Code: %s\n", printValidateErr);
+			free(printValidateErr);
+
+			// Write the calendar object that was created
             strcpy(pathToFile, writePath);
             strcat(pathToFile, files[choice]);
             printf("\nWriting Calendar to \"%s\"\n", pathToFile);
             if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
-                printErr = printError(writeErr);
-                printf("\nAn error occurred: %s\n", printErr);
-                free(printErr);
+                printErrorCode = printError(writeErr);
+                printf("\nAn error occurred: %s\n", printErrorCode);
+                free(printErrorCode);
             } else {
-                printf("\nWrote \"%s\" successfully\n", pathToFile);
+                printf(BR_GREEN "\nWrote \"%s\" successfully!\n" RESET, pathToFile);
             }
 
+			// Delete the calendar
             deleteCalendar(cal);
         }
     } else {
+		//
+		// Every calendar from the readPath will execute sequentially
+		//
         while (files[i] != NULL) {
             strcpy(pathToFile, readPath);
             strcat(pathToFile, files[choice]);
@@ -555,34 +575,39 @@ int main() {
             createErr = createCalendar(pathToFile, &cal);
 
             if (createErr != OK) {
-                printErr = printError(createErr);
-                printf("\nAn error occurred: %s\n", printErr);
-                free(printErr);
+				// Error occurred while reading calendar
+                printErrorCode = printError(createErr);
+                printf("\nAn error occurred: %s\n", printErrorCode);
+                free(printErrorCode);
             } else {
+				// Calendar was created successfully
+				printf(BR_GREEN "\nCalendar created successfully!" RESET " Printing...\n");
                 printCal = printCalendar(cal);
-				printf("\ncreateCalendar() returned OK. Printing Calendar from %s:\n", files[i]);
 				printf("------------------------------------------------------------------------------------------\n");
 				printf("\"%s\"\n", printCal);
 
                 free(printCal);
 
+				// Run the calendar through 'validateCalendar'
 				validateErr = validateCalendar(cal);
 				char *printValidateErr = printError(validateErr);
-				printf("\nValidating calendar that was just created: %s, should be %s\n", printValidateErr, printErr);
+				printf("\nvalidateCalendar() return Code: %s\n", printValidateErr);
 				free(printValidateErr);
 
+				// Write the calendar object that was created
                 strcpy(pathToFile, writePath);
                 strcat(pathToFile, files[choice]);
                 printf("\nWriting Calendar to \"%s\"\n", pathToFile);
                 if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
-                    printErr = printError(writeErr);
-                    printf("\nAn error occurred: %s\n", printErr);
-                    free(printErr);
+                    printErrorCode = printError(writeErr);
+                    printf("\nAn error occurred: %s\n", printErrorCode);
+                    free(printErrorCode);
                 } else {
                     printf("\nWrote \"%s\" successfully\n", pathToFile);
                     written++;
                 }   
 
+				// Delete the calendar
                 deleteCalendar(cal);
             }
 
@@ -591,6 +616,24 @@ int main() {
         printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
 
+
+
+
+
+	/*
+	printf("\n----------DEBUG.H----------\n");
+	debugMsg("This is a test of a debug where this string is the only parameter\n");
+	errorMsg("This is a test of an error where this string is the only parameter\n");
+
+	debugMsg("This is a test of a debug which has one (%d) parameter\n", 1);
+	errorMsg("This is a test of an error which has one (%d) parameter\n", 1);
+
+	debugMsg("This is a test of a dbeug which has %s (%d) paramters\n", "two", 2);
+	errorMsg("This is a test of an error which has %s (%d) parameters\n", "two", 2);
+
+	debugMsg("%s %s %s %c%d%c %s\n", "This is a", "test of a debug", "which has seven", '(', 7, ')', "parameters");
+	errorMsg("%s %s %s %c%d%c %s\n", "This is a", "test of an error", "which has seven", '(', 7, ')', "parameters");
+	*/
 
 
 
