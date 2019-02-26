@@ -30,9 +30,9 @@ const char readPath[] = "/home/joseph/cis2750/a02/";
 
 /* User Score Counters */
 
-int cal_n = 0, cal_d = 0; //                         INV_CAL score
-int evt_n = 0, evt_d = 0; //                       INV_EVENT score
-int alm_n = 0, alm_d = 0; //                       INV_ALARM score
+int cal_n = 0, cal_d = 0; // INV_CAL score
+int evt_n = 0, evt_d = 0; // INV_EVENT score
+int alm_n = 0, alm_d = 0; // INV_ALARM score
 
 int cce_n = 0, cce_d = 0; //             INV_CAL + INV_EVENT score
 int cca_n = 0, cca_d = 0; //             INV_CAL + INV_ALARM score
@@ -53,6 +53,10 @@ int errorCount = 0;
  *****************************************************************************/
 void load(char *fileName)
 {
+	if (calendar) {
+		deleteCalendar(calendar);
+		calendar = NULL;
+	}
 	char filePath[300] = "";
 	strcpy(filePath, readPath);
 	strcat(filePath, fileName);
@@ -63,9 +67,7 @@ void load(char *fileName)
     firstError = printError(input);
     /* Seriously, please don't fail at this point lol */
     if (input != OK)
-        printf(YEL"FATAL:   createCalendar throws %s instead of OK\n"RESET, firstError);
-	else
-		printf(GRN"createCalendar on %s executed successfully\n"RESET, filePath);
+        printf("FATAL:   createCalendar throws %s instead of OK\n", firstError);
     /* Phew, we made it. Time to free this error string */
     free(firstError);
     /* Let's make sure validateCalendar gives us the OK before I do damage */
@@ -89,6 +91,8 @@ int prime()
         printf(YEL"FATAL: validateCalendar throws %s instead of OK (%s)\n", secondError, damage);
         printf(RESET); // reset text colour
         d++;
+		deleteCalendar(calendar);
+		calendar = NULL;
         free(secondError);
     }
     /* We are unable to continue testing until validateCalendar returns OK */
@@ -107,15 +111,22 @@ void test(ICalErrorCode intent)
     /* We see if the ICalErrorCode matches the intended error passed */
     if (validate != intent)
     {
-        printf(RED"BAD  : %s thrown mistakenly (%s)\n", thirdError, damage);d++;
+        printf(RED"BAD  : %s thrown mistakenly (%s)(%d expected)\n", thirdError, damage, intent);d++;
         errors[errorCount] = calloc(1, sizeof(char) * 250);
-        sprintf(errors[errorCount], "BAD: %s thrown mistakenly (%s)\n", thirdError, damage);
+        sprintf(errors[errorCount], "BAD: %s thrown mistakenly (%s)(%d expected)\n", thirdError, damage, intent);
         errorCount++;
     }
     else
-    {printf(GRN"GOOD : %s thrown successfully (%s)\n", thirdError, damage);d++;n++;}
+    {
+		printf(GRN"GOOD : %s thrown successfully (%s)\n", thirdError, damage);
+		d++;
+		n++;
+	}
     /* . . . we free the stuff; rinse and repeat. */
-    if (calendar) deleteCalendar(calendar);
+    if (calendar) {
+		deleteCalendar(calendar);
+		calendar = NULL;
+	}
     free(thirdError);
     printf(RESET); // reset text colour
     return;
@@ -1063,10 +1074,10 @@ int main(void)
         }
         test(INV_CAL);
     }
-    
+
 INVEVENT: printf("Run INV_EVENT tests [0=no, 1=yes]? ");
 	scanf("%d", &choice);
-	
+
     /* Creating INV_CAL score */
     cal_n = n; n = 0;
     cal_d = d; d = 0;
@@ -1965,7 +1976,7 @@ INVEVENT: printf("Run INV_EVENT tests [0=no, 1=yes]? ");
 
 INVALARM: printf("Run INV_ALARM tests [0=no, 1=yes]? ");
 	scanf("%d", &choice);
-	
+
     /* Creating INV_EVENT score */
     evt_n = n; n = 0;
     evt_d = d; d = 0;
@@ -4382,7 +4393,7 @@ INVALARM: printf("Run INV_ALARM tests [0=no, 1=yes]? ");
 
 INVCALXEVENT: printf("Run INV_CAL x INV_EVENT tests [0=no, 1=yes]? ");
 	scanf("%d", &choice);
-	
+
     // cce cca cea
     /* Creating INV_ALM score */
     alm_n = n; n = 0;
@@ -5403,7 +5414,7 @@ OK: printf("Run OK tests [0=no, 1=yes]? ");
 
 END: aok_n = n; n = 0;
     aok_d = d; d = 0;
-   
+
     if (errorCount > 0)
     {
         printf(RED"Repeating previous errors:\n"RESET); 
