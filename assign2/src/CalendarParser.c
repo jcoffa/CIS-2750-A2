@@ -46,6 +46,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     if (fileName == NULL || strcmp(fileName, "") == 0 || !endsWith(fileName, ".ics")) {
 		errorMsg("\tInvalid fileName. fileName = \"%s\"\n", fileName);
         *obj = NULL;
+		notifyMsg("\tRETURNING INV_FILE\n");
         return INV_FILE;
     }
 
@@ -56,6 +57,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 		errorMsg("\tFile could not be found/opened properly\n");
         // On a failure, the obj argument is set to NULL and an error code is returned
         *obj = NULL;
+		notifyMsg("\tRETURNING INV_FILE\n");
         return INV_FILE;
     }
 
@@ -242,7 +244,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     // Calendars require a few mandatory elements. If one does not have
     // any of these properties/lines, it is invalid.
     if (!endCal || !foundEvent || !version || !prodID) {
-		errorMsg("\tMissing required property: endCal=%s, foundEvent=%d, version=%d, prodID=%d\n", \
+		errorMsg("\tMissing required property: endCal=%d, foundEvent=%d, version=%d, prodID=%d\n", \
 		         endCal, foundEvent, version, prodID);
         cleanup(obj, parse, NULL);
         return INV_CAL;
@@ -263,8 +265,14 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
  *@param obj - a pointer to a Calendar struct
 **/
 void deleteCalendar(Calendar* obj) {
-    freeList(obj->events);
-    freeList(obj->properties);
+    if (obj->events != NULL) {
+		freeList(obj->events);
+	}
+
+	if (obj->properties != NULL) {
+		freeList(obj->properties);
+	}
+
     free(obj);
 }
 
@@ -317,7 +325,7 @@ char* printError(ICalErrorCode err) {
     
     switch ((int)err) {
         case OK:
-            strcpy(toReturn, "OK: No errors");
+            strcpy(toReturn, "OK");
             break;
 
         case INV_FILE:
@@ -457,10 +465,22 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
 		return INV_CAL;
 	}
 
-	// verify the product ID
-	int lenID = strlen(obj->prodID);
-	if (lenID <= 0 || lenID >= 1000) {
-		errorMsg("\tCalendar PRODID invalid length: %d\n", lenID);
+	// product Id can't be empty
+	if ((obj->prodID)[0] == '\0') {
+		errorMsg("\tprodID empty string\n");
+		return INV_CAL;
+	}
+
+	// product Id can't be longer than 1000 characters (including '\0')
+	bool terminator = false;
+	for (int i = 0; i <= 999; i++) {
+		if ((obj->prodID)[i] == '\0') {
+			terminator = true;
+			break;
+		}
+	}
+	if (!terminator) {
+		errorMsg("\tprodID did not have a '\\0' within the first 1000 characters\n");
 		return INV_CAL;
 	}
 
@@ -485,7 +505,7 @@ ICalErrorCode validateCalendar(const Calendar* obj) {
 	}
 
 	// verify calendar properties
-	if ((err = validatePropertiesCal(obj->properties) != OK)) {
+	if ((err = validatePropertiesCal(obj->properties)) != OK) {
 		printErr = printError(err);
 		debugMsg("\tvalidatePropertiesCal() returned an error: %s\n", printErr);
 		free(printErr);
@@ -697,10 +717,13 @@ void deleteEvent(void* toBeDeleted) {
 
     Event *ev = (Event *)toBeDeleted;
 
-    // DateTime objects don't need to be freed (they aren't
-    // stored as pointers in an Event struct)
-    freeList(ev->properties);
-    freeList(ev->alarms);
+	if (ev->properties) {
+		freeList(ev->properties);
+	}
+
+	if (ev->alarms) {
+		freeList(ev->alarms);
+	}
 
     free(ev);
 }
@@ -754,8 +777,13 @@ void deleteAlarm(void* toBeDeleted) {
 
     Alarm *al = (Alarm *)toBeDeleted;
 
-    free(al->trigger);
-    freeList(al->properties);
+	if (al->trigger) {
+		free(al->trigger);
+	}
+
+	if (al->properties) {
+		freeList(al->properties);
+	}
 
     free(al);
 }
