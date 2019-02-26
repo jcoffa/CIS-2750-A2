@@ -19,7 +19,7 @@
 int main() {
     const char readPath[] = "/home/joseph/cis2750/a02/TEST/";
     const char writePath[] = "/home/joseph/cis2750/a02/WriteTest/";
-	const char *files[NUM_FILES+1] = {"AIDS/FAMINE.ics",
+	const char *files[NUM_FILES] = {"AIDS/FAMINE.ics",
                                 "AIDS/LOSS.ics",
                                 "AIDS/PESTILENCE.ics",
                                 "AIDS/PLAGUE.ics",
@@ -107,8 +107,7 @@ int main() {
                                 "OK/ValidFileSimple.ics",
                                 "OK/VALID-LINEFOLDSCOMMENTS.ics",
                                 "OK/VALID-LINEFOLDS.ics",
-                                "OK/validation.ics",
-                                NULL};
+                                "OK/validation.ics"};
 
     /*
     printf("----------WHITESPACE TRIMMING----------\n");
@@ -566,9 +565,9 @@ int main() {
 		//
 		// Every calendar from the readPath will execute sequentially
 		//
-        while (files[i] != NULL) {
+        for (i = 0; i < NUM_FILES; i++) {
             strcpy(pathToFile, readPath);
-            strcat(pathToFile, files[choice]);
+            strcat(pathToFile, files[i]);
             printf("\n\n\n==========================================================================================\n");
             printf("Index %d - %s\n", i, pathToFile);
             printf("==========================================================================================\n");
@@ -596,7 +595,7 @@ int main() {
 
 				// Write the calendar object that was created
                 strcpy(pathToFile, writePath);
-                strcat(pathToFile, files[choice]);
+                strcat(pathToFile, files[i]);
                 printf("\nWriting Calendar to \"%s\"\n", pathToFile);
                 if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
                     printErrorCode = printError(writeErr);
@@ -610,8 +609,6 @@ int main() {
 				// Delete the calendar
                 deleteCalendar(cal);
             }
-
-            i++;
         }
         printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
