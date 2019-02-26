@@ -140,5 +140,5 @@ debugvalidate:
 
 # removes all .o and .so files, and the main executable
 clean:
-	rm -f $(OUT)/*.o $(OUT)/*.so $(OUT)/main $(OUT)/mainWrite $(OUT)/mainValidate ../WriteTest/*
+	rm -f -r $(OUT)/*.o $(OUT)/*.so $(OUT)/main $(OUT)/mainWrite $(OUT)/mainValidate ../WriteTest/*
 
