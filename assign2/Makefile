@@ -115,10 +115,28 @@ write:
 	$(MAKE) mainWrite
 	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainWrite
 
+memorywrite:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(OUT)/mainWrite
+
+debugwrite:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/mainWrite
+
 # Executes Jason's test harness for validateCalendar()
 validate:
 	$(MAKE) mainValidate
 	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainValidate
+
+memoryvalidate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(OUT)/mainValidate
+
+debugvalidate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/mainValidate
 
 # removes all .o and .so files, and the main executable
 clean:
