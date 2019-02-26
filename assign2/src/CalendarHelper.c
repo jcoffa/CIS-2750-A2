@@ -157,12 +157,14 @@ ICalErrorCode getDateTimeAsWritable(char *result, DateTime dt) {
  * 		Priority lvl 0/5: OK
  */
 ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr) {
-	ICalErrorCode toReturn = OK;
+	ICalErrorCode toReturn = currentHighest;
 
 	char *printCur = printError(currentHighest);
 	char *printNew = printError(newErr);
 	debugMsg("Current priority error: %s\n", printCur);
 	debugMsg("New error: %s\n", printNew);
+	free(printCur);
+	free(printNew);
 	
 	switch (newErr) {
 		case INV_CAL:
@@ -187,15 +189,20 @@ ICalErrorCode higherPriority(ICalErrorCode currentHighest, ICalErrorCode newErr)
 			}
 			break;
 
+		case OK:
+			break;
+
 		default:
 			if (currentHighest != INV_CAL && currentHighest != INV_EVENT && currentHighest != INV_ALARM \
 			    && currentHighest != OTHER_ERROR) {
 				toReturn = newErr;
 			}
+			break;
 	}
 
 	char *returnErr = printError(toReturn);
 	debugMsg("Returning error: %s\n", returnErr);
+	free(returnErr);
 	return toReturn;
 }
 
@@ -274,21 +281,34 @@ ICalErrorCode validateEvents(List *events) {
 	ListIterator iter = createIterator(events);
 
 	while ((ev = (Event *)nextElement(&iter)) != NULL) {
-		// validate UID
-		if (ev->UID == NULL) {
-			debugMsg("\t\tUID is NULL\n");
+		// check for NULL event members
+		if (ev->properties == NULL || ev->alarms == NULL || ev->UID == NULL) {
+			errorMsg("\t\tfound NULL event member: properties:%p, alarms:%p, UID:%p\n", \
+			         (void *)(ev->properties), (void *)(ev->alarms), (void *)(ev->UID));
 			return INV_EVENT;
 		}
 
-		// UID can't be empty or longer than 1000 characters (including '\0')
-		int lenUID = strlen(ev->UID);
-		if (lenUID == 0 || lenUID >= 1000) {
-			errorMsg("\t\tUID has invalid length: %d\n", lenUID);
+		// UID can't be empty
+		if ((ev->UID)[0] == '\0') {
+			errorMsg("\t\tUID empty string\n");
+			return INV_EVENT;
+		}
+
+		// UID can't be longer than 1000 characters (including '\0')
+		bool terminator = false;
+		for (int i = 0; i <= 999; i++) {
+			if ((ev->UID)[i] == '\0') {
+				terminator = true;
+				break;
+			}
+		}
+		if (!terminator) {
+			errorMsg("\t\tUID had no '\\0' within the first 1000 characters\n");
 			return INV_EVENT;
 		}
 
 		// validate creation and start DateTimes
-		if ((err = validateDateTime(ev->creationDateTime) != OK)) {
+		if ((err = validateDateTime(ev->creationDateTime)) != OK) {
 			errorMsg("\t\tCreation DateTime invalid\n");
 			if (err == INV_DT) {
 				return INV_EVENT;
@@ -304,10 +324,6 @@ ICalErrorCode validateEvents(List *events) {
 		}
 
 		// validate event properties
-		if (ev->properties == NULL) {
-			errorMsg("\t\tProperties list is NULL\n");
-			return INV_EVENT;
-		}
 		if ((err = validatePropertiesEv(ev->properties)) != OK) {
 			errorMsg("\t\tProperties List encountered error\n");
 			highestPriority = higherPriority(highestPriority, err);
@@ -344,23 +360,35 @@ ICalErrorCode validateAlarms(List *alarms) {
 	}
 
 	Alarm *alm;
-	AlarmActionType type;
 	char *upper;
 	ICalErrorCode err, highestPriority;
 	highestPriority = OK;
 	ListIterator iter = createIterator(alarms);
 
 	while ((alm = (Alarm *)nextElement(&iter)) != NULL) {
-		// validate action
-		if (alm->action == NULL) {
-			errorMsg("\t\t\tAlarm ACTION was NULL\n");
+		// validate NULL alarm members
+		if (alm->action == NULL || alm->trigger == NULL || alm->properties == NULL) {
+			errorMsg("\t\t\tfound NULL alarm member: action:%p, trigger:%p, properties:%p\n", \
+			         (void *)(alm->action), (void *)(alm->trigger), (void *)(alm->properties));
 			return INV_ALARM;
 		}
 
-		// action can't be empty or longer than 200 characters (including '\0')
-		int lenAction = strlen(alm->action);
-		if (lenAction == 0 || lenAction >= 200) {
-			errorMsg("\t\t\tAlarm ACTION has invalid length: %d\n", lenAction);
+		// action can't be empty
+		if ((alm->action)[0] == '\0') {
+			errorMsg("\t\t\tACTION empty string\n");
+			return INV_ALARM;
+		}
+
+		// action can't be longer than 200 characters (including '\0')
+		bool terminator = false;
+		for (int i = 0; i <= 199; i++) {
+			if ((alm->action)[i] == '\0') {
+				terminator = true;
+				break;
+			}
+		}
+		if (!terminator) {
+			errorMsg("\t\t\tAlarm ACTION had no '\\0' in the first 200 characters\n");
 			return INV_ALARM;
 		}
 
@@ -368,23 +396,12 @@ ICalErrorCode validateAlarms(List *alarms) {
 		upper = strUpperCopy(alm->action);
 		if (strstr(upper, "AUDIO") != NULL) {
 			debugMsg("\t\t\tAlarm type is AUDIO\n");
-			type = Audio;
-		} else if (strstr(upper, "DISPLAY") != NULL) {
-			debugMsg("\t\t\tAlarm type is DISPLAY\n");
-			type = Display;
-		} else if (strstr(upper, "EMAIL") != NULL) {
-			debugMsg("\t\t\tAlarm type is EMAIL\n");
-			type = Email;
 		} else {
 			errorMsg("\t\t\tAlarm type is invalid\n");
+			free(upper);
 			return INV_ALARM;
 		}
-
-		// validate trigger
-		if (alm->trigger == NULL) {
-			errorMsg("\t\t\tAlarm TRIGGER is NULL\n");
-			return INV_ALARM;
-		}
+		free(upper);
 
 		// trigger can't be an empty string
 		if (strcmp("", alm->trigger) == 0) {
@@ -393,11 +410,7 @@ ICalErrorCode validateAlarms(List *alarms) {
 		}
 
 		// validate alarm properties
-		if (alm->properties == NULL) {
-			errorMsg("\t\t\tAlarm properties List is NULL");
-			return INV_ALARM;
-		}
-		if ((err = validatePropertiesAl(alm->properties, type)) != OK) {
+		if ((err = validatePropertiesAl(alm->properties)) != OK) {
 			errorMsg("\t\t\tAlarm Properties encountered an error\n");
 			highestPriority = higherPriority(highestPriority, err);
 		}
@@ -478,12 +491,11 @@ ICalErrorCode validatePropertiesCal(List *properties) {
 				// This should never happen for a valid calendar: Calendar structs have a unique
 				// variable to store the PRODID and it should never be in the property list.
 				debugMsg("\t\tValidate PRODID or VERSION\n");
-				errorMsg("\t\tDuplicate METHOD\n");
 				return INV_CAL;
 		}
 	}
 
-	successMsg("\t-----END validatePropertiesCal()-----\n");
+	successMsg("\t\t-----END validatePropertiesCal()-----\n");
 	return OK;
 }
 
@@ -507,10 +519,11 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 
 	debugMsg("\t\t----START validatePropertiesEv()-----\n");
 	// The following properties MUST NOT occur more than once:
-	bool class, created,description, geo, last_mod, location, organizer, \
-	     priority, seq, status, summary, transp, url, recurid, rrule;
+	bool class, created, description, geo, last_mod, location, organizer, \
+	     priority, seq, status, summary, transp, url, recurid;
 	class = created = description = geo = last_mod = location = organizer = priority = seq = status = \
-		summary = transp = url = recurid = rrule = false;
+		summary = transp = url = recurid = false;
+
 	// The 'duration' property and 'dtend' property can't show up together in the same event
 	bool dtend, duration;
 	dtend = duration = false;
@@ -687,11 +700,6 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 
 			case 22:
 				debugMsg("\t\t\tValidate RRULE\n");
-				if (rrule) {
-					errorMsg("\t\t\tDuplicate RRULE\n");
-					return INV_EVENT;
-				}
-				rrule = true;
 				break;
 
 			case 23:
@@ -767,7 +775,7 @@ ICalErrorCode validatePropertiesEv(List *properties) {
  *
  * Highest priority error for this function: INV_ALARM (Priority lvl 3/5)
  */
-ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
+ICalErrorCode validatePropertiesAl(List *properties) {
 	if (properties == NULL) {
 		return OTHER_ERROR;
 	}
@@ -776,19 +784,10 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
 	// of using big switch statements with if/else's
 
 	debugMsg("\t\t\t-----START validtePropertiesAl()-----\n");
-	// The following are required for DISPLAY alarms
-	bool description = false;
-
-	// The following are required for all alarm types as long as one of them is present
+	// The following are required as long as at least one of them is present
 	// (i.e. they are optional, but if one is present than the other must be present as well)
 	bool duration, repeat;
 	duration = repeat = false;
-
-	// The following is required for EMAIL alarms, and can occur more than once
-	bool attendee = false;
-
-	// Required for Email type alarms. Can't occur more than once.
-	bool summary = false;
 
 	// Misc. that can't be declared more than once
 	bool attach = false;
@@ -820,42 +819,14 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
 
 			case 1:
 				debugMsg("\t\t\t\tValidate ATTACH\n");
-				if (type == Display) {
-					errorMsg("\t\t\t\tfound ATTACH in Display type alarm\n");
+				if (attach) {
+					errorMsg("\t\t\t\tduplicate ATTACH\n");
 					return INV_ALARM;
-				} else if (type == Audio) {
-					if (attach) {
-						errorMsg("\t\t\t\tduplicate ATTACH in Audio type alarm\n");
-						return INV_ALARM;
-					}
-					attach = true;
 				}
+				attach = true;
 				break;
 
 			case 2:
-				debugMsg("\t\t\t\tValidate ATTENDEE\n");
-				if (type != Email) {
-					errorMsg("\t\t\t\tfound ATTENDEE in non Email type alarm\n");
-					return INV_ALARM;
-				}
-				attendee = true;
-				break;
-
-			case 3:
-				debugMsg("\t\t\t\tValidate DESCRIPTION\n");
-				if (type != Display) {
-					errorMsg("\t\t\t\tfound DESCRIPTION in non Display type alarm\n");
-					return INV_ALARM;
-				}
-
-				if (description) {
-					errorMsg("\t\t\t\tduplicate DESCRIPTION in Display type alarm\n");
-					return INV_ALARM;
-				}
-				description = true;
-				break;
-
-			case 4:
 				debugMsg("\t\t\t\tValidate DURATION\n");
 				if (duration) {
 					errorMsg("\t\t\t\tduplicate DURATION property found\n");
@@ -864,7 +835,7 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
 				duration = true;
 				break;
 
-			case 5:
+			case 3:
 				debugMsg("\t\t\t\tValidate REPEAT\n");
 				if (repeat) {
 					errorMsg("\t\t\t\tduplicate REPEAT property found\n");
@@ -873,27 +844,12 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
 				repeat = true;
 				break;
 
-			case 6:
-				debugMsg("\t\t\t\tValidate SUMMARY\n");
-				if (type != Email) {
-					errorMsg("\t\t\t\tfound SUMMARY in non Email type alarm\n");
-					return INV_ALARM;
-				}
-
-				if (summary) {
-					errorMsg("\t\t\t\tduplicate SUMMARY in Email type alarm\n");
-					return INV_ALARM;
-				}
-				summary = true;
-				break;
-
-			case 7:
+			case 4:
 				// This property is already accounted for in the Alarm structure definition.
 				// If it showss up in the property List, then something has gone wrong
 				// in createCalendar() as this error should have been caught there.
 				debugMsg("\t\t\t\tValidate TRIGGER\n");
 				return INV_ALARM;
-				break;
 		}
 	}
 
@@ -901,12 +857,6 @@ ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type) {
 	if (duration != repeat) {
 		errorMsg("\t\t\t\tduration != repeat (%d and %d respectively)\n", \
 			   duration, repeat);
-		return INV_ALARM;
-	}
-
-	// Email type alarms need at least 1 attendee
-	if (type == Email && !attendee) {
-		errorMsg("\t\t\t\tEmail type alarm lacks at least 1 attendee\n");
 		return INV_ALARM;
 	}
 
@@ -924,20 +874,34 @@ ICalErrorCode validateDateTime(DateTime dt) {
 	debugMsg("\t\t-----START validateDateTime()-----\n");
 	debugMsg("\t\t\tDate: %s, Time: %s, UTC? %s\n", dt.date, dt.time, (dt.UTC) ? "Yes" : "No");
 
-	int lenDate = strlen(dt.date);
-	int lenTime = strlen(dt.time);
-
-	debugMsg("\t\t\tlenDate = %d, lenTime = %d\n", lenDate, lenTime);
-
 	// date must be of the form YYYYMMDD = 8 characters
+	bool terminator = false;
+	for (int i = 0; i <= 8; i++) {
+		if ((dt.date)[i] == '\0') {
+			terminator = true;
+			break;
+		}
+	}
+	if (!terminator) {
+		errorMsg("\t\t\tdate did not have a '\\0' within the first 8 characters\n");
+		return INV_DT;
+	}
+
 	// time must be of the form HHMMSS = 6 characters
-	if (lenDate != 8 || lenTime != 6) {
-		errorMsg("\t\t\tEither lenDate != 8 or lenTime != 6 (or both)\n");
+	terminator = false;
+	for (int i = 0; i <= 6; i++) {
+		if ((dt.time)[i] == '\0') {
+			terminator = true;
+			break;
+		}
+	}
+	if (!terminator) {
+		errorMsg("\t\t\ttime did not have a '\\0' within the first 6 characters\n");
 		return INV_DT;
 	}
 
 	// check if the date contains only numbers
-	for (int i = 0; i < lenDate; i++) {
+	for (int i = 0; i < 8; i++) {
 		if (!isdigit((dt.date)[i])) {
 			errorMsg("\t\t\tdate contained non-number character\n");
 			return INV_DT;
@@ -945,7 +909,7 @@ ICalErrorCode validateDateTime(DateTime dt) {
 	}
 
 	// check if the time contains only numbers
-	for (int i = 0; i < lenTime; i++) {
+	for (int i = 0; i < 6; i++) {
 		if (!isdigit((dt.time)[i])) {
 			errorMsg("\t\t\ttime contained non-number character\n");
 			return INV_DT;
