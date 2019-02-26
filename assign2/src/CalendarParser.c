@@ -29,7 +29,8 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
     FILE *fin;
     ICalErrorCode error;
     bool version, prodID, method, beginCal, endCal, foundEvent;
-    char *parse;
+    char *parse, *name, *descr;
+	char delim[] = ";:";
     version = prodID = method = beginCal = endCal = foundEvent = false;
 
 	debugMsg("-----START createCalendar()-----\n");
@@ -79,20 +80,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 
 		debugMsg("\tLine read : \"%s\"\n", line);
 
-        parse = strUpperCopy(line);
-
-        //debugMsg("upper'd line = \"%s\"\n", parse);
-
-        // Empty lines/lines containing just whitespace are NOT permitted
-        // by the iCal specification.
-        // (readFold function automatically trims whitespace)
-        if (strlen(parse) == 0) {
-			errorMsg("\tLine read contained all whitespace\n");
-            cleanup(obj, parse, fin);
-            return INV_CAL;
-        }
-        
-        if (startsWith(parse, ";")) {
+		if (line[0] == ';') {
             // lines starting with a semicolon (;) are comments, and
             // should be ignored
             free(parse);
@@ -100,7 +88,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             continue;
         }
 
-        // Check if the END:VCALENDAR has been hit. If it has, and there is still more file to be read,
+		// Check if the END:VCALENDAR has been hit. If it has, and there is still more file to be read,
         // then something has gone wrong.
         if (endCal) {
 			errorMsg("\tMore lines after hitting END:VCALENDAR\n");
@@ -108,8 +96,35 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             return INV_CAL;
         }
 
+        parse = strUpperCopy(line);
+
+        //debugMsg("upper'd line = \"%s\"\n", parse);
+
+		// Empty lines/lines containing just whitespace are NOT permitted
+        // by the iCal specification.
+        // (readFold function automatically trims whitespace)
+        if (parse[0] == '\0') {
+			errorMsg("\tLine read contained all whitespace\n");
+            cleanup(obj, parse, fin);
+            return INV_CAL;
+        }
+
+		// split the string into the property name and property description
+		if ((name = strtok(parse, delim)) == NULL) {
+			// The line is only delimiters, which obviously is not allowed
+			debugMsg("\tLine contained only delimiters\n");
+			cleanup(obj, parse, fin);
+			return INV_CAL;
+		}
+		if ((descr = strtok(NULL, delim)) == NULL) {
+			// The line has no property description, or doesn't contain any delimiters
+			debugMsg("\tLine contains no property description\n");
+			cleanup(obj, parse, fin);
+			return INV_CAL;
+		}
+
         // The first non-commented line must be BEGIN:VCALENDAR
-        if (!beginCal && strcmp(parse, "BEGIN:VCALENDAR") != 0) {
+        if (!beginCal && !(strcmp(name, "BEGIN") == 0 && strcmp(descr, "VCALENDAR") == 0)) {
 			errorMsg("\tFirst non-comment line was not BEGIN:VCALENDAR\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
@@ -121,7 +136,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
         
 
         // add properties, alarms, events, and other elements to the calendar
-        if (startsWith(parse, "VERSION:")) {
+        if (strcmp(name, "VERSION") == 0) {
             if (version) {
 				errorMsg("\tEncountered duplicate version\n");
                 cleanup(obj, parse, fin);
@@ -143,7 +158,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 
             //debugMsg("set version to %f\n", (*obj)->version);
             version = true;
-        } else if (startsWith(parse, "PRODID:")) {
+        } else if (strcmp(name, "PRODID") == 0) {
             if (prodID) {
 				errorMsg("\tDuplicate PRODID\n");
                 cleanup(obj, parse, fin);
@@ -162,7 +177,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             strcpy((*obj)->prodID, line + 7);
             //debugMsg("set product ID to\"%s\"\n", (*obj)->prodID);
             prodID = true;
-        } else if (startsWith(parse, "METHOD:")) {
+        } else if (strcmp(name, "METHOD") == 0) {
             if (method) {
 				errorMsg("\tDuplicate METHOD\n");
                 cleanup(obj, parse, fin);
@@ -187,14 +202,14 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
 
             insertFront((*obj)->properties, (void *)methodProp);
             method = true;
-        } else if (strcmp(parse, "END:VCALENDAR") == 0) {
+        } else if (strcmp(name, "END") == 0 && strcmp(descr, "VCALENDAR") == 0) {
             endCal = true;
-        } else if (strcmp(parse, "BEGIN:VCALENDAR") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VCALENDAR") == 0) {
             // only 1 calendar allowed per file
 			errorMsg("\tDuplicate BEGIN:VCALENDAR\n");
             cleanup(obj, parse, fin);
             return INV_CAL;
-        } else if (strcmp(parse, "BEGIN:VEVENT") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VEVENT") == 0) {
             Event *event;
             if ((error = getEvent(fin, &event)) != OK) {
                 // something happened, and the event could not be created properly
@@ -205,7 +220,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             foundEvent = true;
 
             insertFront((*obj)->events, (void *)event);
-        } else if (strcmp(parse, "BEGIN:VALARM") == 0) {
+        } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VALARM") == 0) {
             // there can't be an alarm for an entire calendar
             errorMsg("found an alarm not in an event\n");
             cleanup(obj, parse, fin);
@@ -218,7 +233,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
         } else {
             // All other BEGIN: clauses have been handled in their own 'else if' case.
             // If another one is hit, then it is an error.
-            if (startsWith(parse, "BEGIN:")) {
+            if (strcmp(name, "BEGIN") == 0) {
 				errorMsg("\tFound illegal BEGIN: \"%s\"\n", line);
                 cleanup(obj, parse, fin);
                 return INV_CAL;
