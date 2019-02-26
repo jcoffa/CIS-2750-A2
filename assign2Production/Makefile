@@ -23,7 +23,7 @@ VPATH = $(SRC):$(INCL):$(OUT)
 
 # compilation options
 CC = gcc
-CFLAGS := -std=c11 -Wall $(addprefix -I,$(INCL)) -g
+CFLAGS := -std=c11 -Wall -Wpedantic $(addprefix -I,$(INCL)) -g
 LDFLAGS := -L. -L$(OUT) $(addprefix -l,$(SHARED))
 
 
@@ -31,7 +31,7 @@ LDFLAGS := -L. -L$(OUT) $(addprefix -l,$(SHARED))
 # Make Rules #
 ##############
 
-all: list parser libparsing.so libinit.so libcalhelp.so liblisthelp.so libdebug.so
+all: list parser libparsing.so libinit.so libcalhelp.so liblisthelp.so libdebug.so main
 
 list: liblist.so
 
@@ -79,11 +79,66 @@ libdebug.so: Debug.o
 Debug.o: Debug.c Debug.h
 	$(CC) $(CFLAGS) -c -fpic $(SRC)/Debug.c -o $(OUT)/Debug.o
 
+main: main.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/main.c -o $(OUT)/main
+
+mainWrite: writeCalendarTestContinued.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/writeCalendarTestContinued.c -o $(OUT)/mainWrite
+
+mainValidate: TestSuiteA2m2v2.c $(addprefix lib,$(addsuffix .so,$(SHARED)))
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC)/TestSuiteA2m2v2.c -o $(OUT)/mainValidate
+
+
 #############
 # Utilities #
 #############
 
-# removes all .o and .so files
+# make and run the main executable
+run:
+	$(MAKE) main
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/main
+
+
+# make and run the main executable with valgrind
+memory:
+	$(MAKE) main
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(OUT)/main
+
+# make and run the main executable with gdb
+debug:
+	$(MAKE) main
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/main
+
+# Executes Jason's test harness for writeCalendar()
+write:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainWrite
+
+memorywrite:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(OUT)/mainWrite
+
+debugwrite:
+	rm ../WriteTest/*
+	$(MAKE) mainWrite
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/mainWrite
+
+# Executes Jason's test harness for validateCalendar()
+validate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH ./$(OUT)/mainValidate
+
+memoryvalidate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(OUT)/mainValidate
+
+debugvalidate:
+	$(MAKE) mainValidate
+	LD_LIBRARY_PATH=.:$(OUT):$$LD_LIBRARY_PATH gdb ./$(OUT)/mainValidate
+
+# removes all .o and .so files, and the main executable
 clean:
-	rm -f $(OUT)/*.o $(OUT)/*.so
+	rm -f -r $(OUT)/*.o $(OUT)/*.so $(OUT)/main $(OUT)/mainWrite $(OUT)/mainValidate ../WriteTest/*
 
