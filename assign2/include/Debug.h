@@ -11,10 +11,9 @@
 #define DEBUG_H
 
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 
-#define DEBUG_MODE true
+#define DEBUG_MODE 0
 
 // Cyan ANSI escape code
 #define CYAN	"\x1b[36m"
