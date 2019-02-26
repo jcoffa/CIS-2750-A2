@@ -21,16 +21,6 @@
 #include "CalendarParser.h"
 #include "Debug.h"
 
-/****************
- * Enumerations *
- ****************/
-
-typedef enum type {
-	Audio,
-	Display,
-	Email
-} AlarmActionType;
-
 /**********************
  * Property constants *
  **********************/
@@ -41,12 +31,11 @@ const char *calPropNames[NUM_CALPROPNAMES] = {"CALSCALE", "METHOD", "PRODID", "V
 #define NUM_EVENTPROPNAMES 30
 const char *eventPropNames[NUM_EVENTPROPNAMES] = {"ATTACH", "ATTENDEE", "CATEGORIES", "CLASS", "COMMENT", \
 	"CONTACT", "CREATED", "DESCRIPTION", "DTEND", "DTSTAMP", "DTSTART", "DURATION", "EXDATE", \
-	"GEO", "LAST-MODIFIED", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURID", "RELATED", "RESOURCES", \
-	"RRULE", "RSTATUS", "SEQ", "STATUS", "SUMMARY", "TRANSP", "UID", "URL"};
+	"GEO", "LAST-MODIFIED", "LOCATION", "ORGANIZER", "PRIORITY", "RDATE", "RECURRENCE-ID", "RELATED-TO", \
+	"RESOURCES", "RRULE", "REQUEST-STATUS", "SEQUENCE", "STATUS", "SUMMARY", "TRANSP", "UID", "URL"};
 
-#define NUM_ALARMPROPNAMES 8
-const char *alarmPropNames[NUM_ALARMPROPNAMES] = {"ACTION", "ATTACH", "ATTENDEE", "DESCRIPTION", "DURATION", \
-	"REPEAT", "SUMMARY", "TRIGGER"};
+#define NUM_ALARMPROPNAMES 5
+const char *alarmPropNames[NUM_ALARMPROPNAMES] = {"ACTION", "ATTACH", "DURATION", "REPEAT", "TRIGGER"};
 
 /***********************
  * Function Signatures *
@@ -74,7 +63,7 @@ ICalErrorCode validatePropertiesCal(List *properties);
 
 ICalErrorCode validatePropertiesEv(List *properties);
 
-ICalErrorCode validatePropertiesAl(List *properties, AlarmActionType type);
+ICalErrorCode validatePropertiesAl(List *properties);
 
 ICalErrorCode validateDateTime(DateTime dt);
 
