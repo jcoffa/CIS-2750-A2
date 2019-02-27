@@ -25,8 +25,8 @@ ICalErrorCode writeProperties(FILE *fout, List *props) {
     }
 
     Property *toWrite;
-    ListIterator iter = createReverseIterator(props);
-    while ((toWrite = (Property *)previousElement(&iter)) != NULL) {
+    ListIterator iter = createIterator(props);
+    while ((toWrite = (Property *)nextElement(&iter)) != NULL) {
         fprintf(fout, "%s%c%s\r\n", \
                 toWrite->propName, \
                 // The comparison below is essentially "does toWrite->propDescr contain a ':' character?"
@@ -56,9 +56,9 @@ ICalErrorCode writeEvents(FILE *fout, List *events) {
 
     ICalErrorCode err;
     Event *toWrite;
-    ListIterator iter = createReverseIterator(events);
+    ListIterator iter = createIterator(events);
     char dateTimeData[100];
-    while ((toWrite = (Event *)previousElement(&iter)) != NULL) {
+    while ((toWrite = (Event *)nextElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VEVENT\r\n");
         fprintf(fout, "UID:%s\r\n", toWrite->UID);
 
@@ -113,8 +113,8 @@ ICalErrorCode writeAlarms(FILE *fout, List *alarms) {
 
     ICalErrorCode err;
     Alarm *toWrite;
-    ListIterator iter = createReverseIterator(alarms);
-    while ((toWrite = (Alarm *)previousElement(&iter)) != NULL) {
+    ListIterator iter = createIterator(alarms);
+    while ((toWrite = (Alarm *)nextElement(&iter)) != NULL) {
         fprintf(fout, "BEGIN:VALARM\r\n");
         fprintf(fout, "ACTION:%s\r\n", toWrite->action);
         fprintf(fout, "TRIGGER:%s\r\n", toWrite->trigger);

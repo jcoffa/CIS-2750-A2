@@ -200,7 +200,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
                 return INV_CAL;
             }
 
-            insertFront((*obj)->properties, (void *)methodProp);
+            insertBack((*obj)->properties, (void *)methodProp);
             method = true;
         } else if (strcmp(name, "END") == 0 && strcmp(descr, "VCALENDAR") == 0) {
             endCal = true;
@@ -219,7 +219,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             }
             foundEvent = true;
 
-            insertFront((*obj)->events, (void *)event);
+            insertBack((*obj)->events, (void *)event);
         } else if (strcmp(name, "BEGIN") == 0 && strcmp(descr, "VALARM") == 0) {
             // there can't be an alarm for an entire calendar
             errorMsg("found an alarm not in an event\n");
@@ -248,7 +248,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
                 return INV_CAL;
             }
 
-            insertFront((*obj)->properties, (void *)prop);
+            insertBack((*obj)->properties, (void *)prop);
         }
 
         free(parse);
@@ -610,7 +610,7 @@ char* eventListToJSON(const List* eventList) {
 	// Start by putting the initial bracket '[' in the JSON
 	toReturn = malloc(2);
 	strcpy(toReturn, "[");
-	currentLength = 2;
+	currentLength = 1;
 
 	// Add all the event JSON's to 'toReturn'
 	// Casting a List * into a List * to avoid a warning regarding non-const parameters
@@ -618,11 +618,13 @@ char* eventListToJSON(const List* eventList) {
 	Event *ev;
 	while ((ev = (Event *)nextElement(&iter)) != NULL) {
 		tempEvJSON = eventToJSON(ev);
-		currentLength += strlen(tempEvJSON) + 1;
+		debugMsg("Event JSON just created: \"%s\"\n", tempEvJSON);
+		currentLength += strlen(tempEvJSON);
 		toReturn = realloc(toReturn, currentLength);
 
 		strcat(toReturn, tempEvJSON);
 		strcat(toReturn, ",");
+		currentLength += 1;
 
 		free(tempEvJSON);
 	}
@@ -650,8 +652,8 @@ char* calendarToJSON(const Calendar* cal) {
 	}
 
 	toReturn = malloc(2000);
-	written = snprintf(toReturn, 2000, "{\"version\":%.1f,\"prodID\":\"%s\",\"numProps\":%d,\"numEvents\":%d}", \
-	                   cal->version, cal->prodID, getLength(cal->properties) + 2, getLength(cal->events));
+	written = snprintf(toReturn, 2000, "{\"version\":%d,\"prodID\":\"%s\",\"numProps\":%d,\"numEvents\":%d}", \
+	                   (int)cal->version, cal->prodID, getLength(cal->properties) + 2, getLength(cal->events));
 
 	return realloc(toReturn, written + 1);
 }
