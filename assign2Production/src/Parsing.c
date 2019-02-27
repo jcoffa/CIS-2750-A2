@@ -367,7 +367,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
                 goto CLEANEV;
             }
 
-            insertFront((*event)->alarms, (void *)toAdd);
+            insertBack((*event)->alarms, (void *)toAdd);
         } else if (strcmp(name, "END") == 0 && strcmp(descr, "VALARM") == 0) {
             errorMsg("\t\tfound duplicate end of alarm: \"%s\"\n", line);
             error = INV_EVENT;
@@ -392,7 +392,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
                 goto CLEANEV;
             }
 
-            insertFront((*event)->properties, (void *)prop);
+            insertBack((*event)->properties, (void *)prop);
         }
     }
 
@@ -544,7 +544,7 @@ ICalErrorCode getAlarm(FILE *fp, Alarm **alarm) {
                 goto CLEANAL;
             }
 
-            insertFront((*alarm)->properties, (void *)prop);
+            insertBack((*alarm)->properties, (void *)prop);
         }
     }
 
