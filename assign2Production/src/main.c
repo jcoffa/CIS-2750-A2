@@ -548,7 +548,7 @@ int main() {
 
 			// Write the calendar object that was created
             strcpy(pathToFile, writePath);
-            strcat(pathToFile, files[choice]);
+			strcat(pathToFile, (files[choice]) + strcspn(files[choice], "/") + 1);
             printf("\nWriting Calendar to \"%s\"\n", pathToFile);
             if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
                 printErrorCode = printError(writeErr);
@@ -557,6 +557,15 @@ int main() {
             } else {
                 printf(BR_GREEN "\nWrote \"%s\" successfully!\n" RESET, pathToFile);
             }
+
+			// Convert the calendar object into a JSON string
+			printf("\nWriting Calendar and its Event List to JSON strings\n");
+			char *calJSON = calendarToJSON(cal);
+			char *evtListJSON = eventListToJSON(cal->events);
+
+			printf("\nCalendar JSON: %s\n\nEvent List JSON: %s\n", calJSON, evtListJSON);
+			free(calJSON);
+			free(evtListJSON);
 
 			// Delete the calendar
             deleteCalendar(cal);
@@ -595,7 +604,7 @@ int main() {
 
 				// Write the calendar object that was created
                 strcpy(pathToFile, writePath);
-                strcat(pathToFile, files[i]);
+                strcat(pathToFile, (files[i]) + strcspn(files[i], "/") + 1);
                 printf("\nWriting Calendar to \"%s\"\n", pathToFile);
                 if ((writeErr = writeCalendar(pathToFile, cal)) != OK) {
                     printErrorCode = printError(writeErr);
@@ -605,6 +614,15 @@ int main() {
                     printf("\nWrote \"%s\" successfully\n", pathToFile);
                     written++;
                 }   
+
+				// Convert the calendar object into a JSON string
+				printf("\nWriting Calendar and its Event List to JSON strings\n");
+				char *calJSON = calendarToJSON(cal);
+				char *evtListJSON = eventListToJSON(cal->events);
+
+				printf("Calendar JSON: %s\nEvent List JSON: %s\n", calJSON, evtListJSON);
+				free(calJSON);
+				free(evtListJSON);
 
 				// Delete the calendar
                 deleteCalendar(cal);
@@ -656,6 +674,31 @@ int main() {
 	printf("Does \"elephant\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("elephant", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"snail\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("snail", 4, "dog", "cat", "elephant", "snail"));
 	printf("Does \"monkey\" equal one of\t[\"dog\", \"cat\", \"elephant\", \"snail\"]? : %d\n", vequalsOneOfStr("monkey", 4, "dog", "cat", "elephant", "snail"));
+	*/
+	
+
+
+
+
+	/*
+	printf("\n----------__TOJSON----------\n");
+	Calendar *JSONcal;
+	ICalErrorCode createJSONerr = createCalendar("/home/joseph/cis2750/a02/TEST/OK/json.ics", &JSONcal);
+
+	if (createJSONerr == OK) {
+		char *calJ = calendarToJSON(JSONcal);
+		char *evtJ = eventListToJSON(JSONcal->events);
+		char *dtJ = dtToJSON(((Event *)(JSONcal->events->head->data))->startDateTime);
+
+		printf("\nCal JSON: %s\n\nEvent List JSON: %s\n\nDTSTART of first event in list JSON: %s\n", \
+		       calJ, evtJ, dtJ);
+
+		free(calJ);
+		free(evtJ);
+		free(dtJ);
+	} else {
+		printf("createCalendar() failed\n");
+	}
 	*/
 
     return EXIT_SUCCESS;
