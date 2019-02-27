@@ -650,8 +650,8 @@ char* calendarToJSON(const Calendar* cal) {
 	}
 
 	toReturn = malloc(2000);
-	written = snprintf(toReturn, 2000, "{\"version\":%.1f,\"prodID\":\"%s\",\"numProps\":%d,\"numEvents\":%d}", \
-	                   cal->version, cal->prodID, getLength(cal->properties) + 2, getLength(cal->events));
+	written = snprintf(toReturn, 2000, "{\"version\":%d,\"prodID\":\"%s\",\"numProps\":%d,\"numEvents\":%d}", \
+	                   (int)cal->version, cal->prodID, getLength(cal->properties) + 2, getLength(cal->events));
 
 	return realloc(toReturn, written + 1);
 }
