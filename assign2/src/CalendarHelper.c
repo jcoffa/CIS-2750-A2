@@ -641,9 +641,9 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				break;
 
 			case 14:
-				debugMsg("\t\t\tValidate LAST-MOD\n");
+				debugMsg("\t\t\tValidate LAST-MODIFIED\n");
 				if (last_mod) {
-					errorMsg("\t\t\tDuplicate LAST-MOD\n");
+					errorMsg("\t\t\tDuplicate LAST-MODIFIED\n");
 					return INV_EVENT;
 				}
 				last_mod = true;
@@ -681,16 +681,16 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				break;
 
 			case 19:
-				debugMsg("\t\t\tValidate RECURID\n");
+				debugMsg("\t\t\tValidate RECURRENCE-ID\n");
 				if (recurid) {
-					errorMsg("\t\t\tDuplicate RECURID\n");
+					errorMsg("\t\t\tDuplicate RECURRENCE-ID\n");
 					return INV_EVENT;
 				}
 				recurid = true;
 				break;
 
 			case 20:
-				debugMsg("\t\t\tValidate RELATED\n");
+				debugMsg("\t\t\tValidate RELATED-TO\n");
 				break;
 
 			case 21:
@@ -702,19 +702,15 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				break;
 
 			case 23:
-				debugMsg("\t\t\tValidate RSTATUS\n");
-				break;
-
-			case 24:
-				debugMsg("\t\t\tValidate SEQ\n");
+				debugMsg("\t\t\tValidate SEQUENCE\n");
 				if (seq) {
-					errorMsg("\t\t\tDuplicate SEQ\n");
+					errorMsg("\t\t\tDuplicate SEQUENCE\n");
 					return INV_EVENT;
 				}
 				seq = true;
 				break;
 
-			case 25:
+			case 24:
 				debugMsg("\t\t\tValidate STATUS\n");
 				if (status) {
 					errorMsg("\t\t\tDuplicate STATUS\n");
@@ -723,7 +719,7 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				status = true;
 				break;
 
-			case 26:
+			case 25:
 				debugMsg("\t\t\tValidate SUMMARY\n");
 				if (summary) {
 					errorMsg("\t\t\tDuplicate SUMMARY\n");
@@ -732,7 +728,7 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				summary = true;
 				break;
 
-			case 27:
+			case 26:
 				debugMsg("\t\t\tValidate TRANSP\n");
 				if (transp) {
 					errorMsg("\t\t\tDuplicate TRANSP\n");
@@ -741,7 +737,7 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				transp = true;
 				break;
 
-			case 28:
+			case 27:
 				debugMsg("\t\t\tValidate UID\n");
 				// This property is already accounted for in the Event structure definition.
 				// If it showss up in the property List, then something has gone wrong
@@ -749,7 +745,7 @@ ICalErrorCode validatePropertiesEv(List *properties) {
 				errorMsg("\t\t\tUID found in property List\n");
 				return INV_EVENT;
 
-			case 29:
+			case 28:
 				debugMsg("\t\t\tValidate URL\n");
 				if (url) {
 					errorMsg("\t\t\tDuplicate URL\n");

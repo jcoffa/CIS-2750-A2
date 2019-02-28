@@ -5318,7 +5318,7 @@ OK: printf("Run OK tests [0=no, 1=yes]? ");
     // adding unlimited event properties
     char *okUnlimited[] = 
     {
-        "ATTACH", "ATTENDEE", "CATEGORIES", "COMMENT", "CONTACT", "EXDATE", "REQUEST-STATUS",
+        "ATTACH", "ATTENDEE", "CATEGORIES", "COMMENT", "CONTACT", "EXDATE",
         "RELATED-TO", "RESOURCES", "RDATE", "RRULE" , NULL
     };
 
