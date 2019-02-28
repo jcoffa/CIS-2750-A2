@@ -492,6 +492,7 @@ int main() {
 
 
 
+	/*
     printf("\n\n\n----------CALENDAR CREATION----------\n");
     char *printCal, *printErrorCode;
 
@@ -630,6 +631,7 @@ int main() {
         }
         printf("\n\nRan through %d calendars.\nSuccessfully wrote %d of them.\n", i, written);
     }
+	*/
 
 
 
@@ -680,26 +682,58 @@ int main() {
 
 
 
-	/*
 	printf("\n----------__TOJSON----------\n");
 	Calendar *JSONcal;
 	ICalErrorCode createJSONerr = createCalendar("/home/joseph/cis2750/a02/TEST/OK/json.ics", &JSONcal);
 
 	if (createJSONerr == OK) {
 		char *calJ = calendarToJSON(JSONcal);
-		char *evtJ = eventListToJSON(JSONcal->events);
+
+		char *evtJSONArr[8];
+		char evtToJSONArr[8][300];
+		int i = 0;
+		ListIterator iter = createIterator(JSONcal->events);
+		Event *temp;
+		while ((temp = (Event *)nextElement(&iter)) != NULL) {
+			evtJSONArr[i] = eventToJSON(temp);
+			sprintf(evtToJSONArr[i], "{\"UID\":\"%s\"}", temp->UID);
+			i++;
+		}
+
 		char *dtJ = dtToJSON(((Event *)(JSONcal->events->head->data))->startDateTime);
 
-		printf("\nCal JSON: %s\n\nEvent List JSON: %s\n\nDTSTART of first event in list JSON: %s\n", \
-		       calJ, evtJ, dtJ);
+		printf("\nCal JSON: %s\n", calJ);
+		printf("\nEvent JSON's:\n");
+		for (int j = 0; j < i; j++) {
+			printf("%s\n", evtJSONArr[j]);
+		}
+		printf("\nFirst dateTime of first event JSON: %s\n", dtJ);
+
+		printf("\nConverting Calendar and Event JSON's to structures\n");
+		Calendar *calFromJSON = JSONtoCalendar(calJ);
+		char *pcal = printCalendar(calFromJSON);
+		printf("\nCalendar from JSON: \n\"%s\"\n\n", pcal);
+		free(pcal);
+
+		Event *evtArr[8];
+		for (int j = 0; j < i; j++) {
+			evtArr[j] = JSONtoEvent(evtToJSONArr[j]);
+			char *pev = printEvent(evtArr[j]);
+			printf("Event #%d from JSON: \n\"%s\"\n\n", j, pev);
+			free(pev);
+		}
 
 		free(calJ);
-		free(evtJ);
+
+		for (int j = 0; j < i; j++) {
+			free(evtJSONArr[j]);
+			deleteEvent(evtArr[j]);
+		}
+
 		free(dtJ);
 	} else {
 		printf("createCalendar() failed\n");
 	}
-	*/
 
     return EXIT_SUCCESS;
 }
