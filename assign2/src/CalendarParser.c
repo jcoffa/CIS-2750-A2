@@ -225,7 +225,7 @@ ICalErrorCode createCalendar(char* fileName, Calendar** obj) {
             errorMsg("found an alarm not in an event\n");
             cleanup(obj, parse, fin);
             return INV_ALARM;
-        } else if (strcmp(parse, "END:VEVENT") == 0 || strcmp(parse, "END:VALARM") == 0) {
+        } else if (strcmp(name, "END") == 0 && (strcmp(descr, "VEVENT") == 0 || strcmp(descr, "VALARM") == 0)) {
             // a duplicated END tag was found
             errorMsg("Found a duplicated END tag: \"%s\"\n", line);
             cleanup(obj, parse, fin);
