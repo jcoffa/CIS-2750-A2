@@ -676,7 +676,7 @@ Calendar* JSONtoCalendar(const char* str) {
 
 	// The JSON string 'str' is similar to the JSON string created by calendarToJSON(),
 	// except it lacks the list info.
-	if (sscanf(str, "{\"version\":%f,\"prodID\":\"%s\"}", &(toReturn->version), toReturn->prodID) < 2) {
+	if (sscanf(str, "{\"version\":%f,\"prodID\":\"%999[^\"]\"}", &(toReturn->version), toReturn->prodID) < 2) {
 		return NULL;
 	}
 
