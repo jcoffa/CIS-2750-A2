@@ -353,6 +353,7 @@ ICalErrorCode getEvent(FILE *fp, Event **event) {
 
             // UID is empty
             if (strlen(line+4) == 0) {
+				errorMsg("\t\tUID property is empty\n");
                 error = INV_EVENT;
                 goto CLEANEV;
             }
