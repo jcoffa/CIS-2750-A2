@@ -9,7 +9,6 @@
 
 #include "CalendarHelper.h"
 #include "Debug.h"
-#include "LinkedListHelper.h"
 #include "Parsing.h"
 
 /* Writes the property list 'props' to the file pointed to by 'fout' in the proper
